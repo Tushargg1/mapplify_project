@@ -51,7 +51,7 @@ export default function Sidebar({
   };
 
   return (
-    <div className="absolute left-0 top-[56%] -translate-y-1/2 z-40 h-[72vh]">
+    <div className="absolute left-0 top-1/2 -translate-y-1/2 z-40 max-h-[85dvh] flex flex-col">
       <AnimatePresence mode="wait">
         {isExpanded ? (
           <motion.div
@@ -60,9 +60,9 @@ export default function Sidebar({
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: -300, opacity: 0 }}
             transition={{ duration: 0.28 }}
-            className="relative w-[276px] h-[65vh]"
+            className="relative w-[276px] h-full"
           >
-            <div className="h-full bg-white/20 backdrop-blur-xl border border-white/40 shadow-lg rounded-r-2xl p-6 flex flex-col text-black min-h-0">
+            <div className="h-full bg-white/20 backdrop-blur-xl border border-white/40 shadow-lg rounded-r-2xl p-6 flex flex-col text-black overflow-y-auto max-h-[85dvh]">
               <button
                 onClick={onToggle}
                 className="absolute -right-[43px] top-6 w-[43px] h-[43px] bg-white/20 backdrop-blur-xl border border-white/40 shadow-lg rounded-r-xl flex items-center justify-center hover:bg-white/30"

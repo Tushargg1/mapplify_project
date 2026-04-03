@@ -2963,7 +2963,7 @@ export default function MapView() {
 
   return (
     <APIProvider apiKey={googleMapsApiKey} libraries={["marker", "places"]}>
-      <div style={{ height: "100vh", width: "100vw" }} className="relative overflow-hidden bg-slate-950">
+      <div style={{ height: "100dvh", width: "100vw" }} className="relative overflow-hidden bg-slate-950">
         <GoogleMap
           className="absolute inset-0 w-full h-full z-10"
           center={mapCenter}
@@ -3091,7 +3091,7 @@ export default function MapView() {
         <button
           type="button"
           onClick={handleRecenterButtonClick}
-          className="absolute bottom-4 right-4 z-50 rounded-2xl border border-white/50 bg-white/85 px-4 py-2 text-sm font-semibold text-slate-900 shadow-lg backdrop-blur hover:bg-white"
+          className="absolute bottom-10 right-4 z-50 rounded-2xl border border-white/50 bg-white/85 px-4 py-2 text-sm font-semibold text-slate-900 shadow-lg backdrop-blur hover:bg-white"
         >
           <span className="inline-flex items-center gap-2">
             <RouteIcon className="h-4 w-4" />
