@@ -12,7 +12,7 @@ public class RoomService {
 
     private final Map<String, Room> rooms = new ConcurrentHashMap<>();
 
-    public Room createRoom(String ownerId, double lat, double lng) {
+    public Room createRoom(String ownerId, Double lat, Double lng) {
         String roomId = UUID.randomUUID().toString().substring(0, 8);
 
         Room r = new Room(roomId, ownerId, lat, lng);

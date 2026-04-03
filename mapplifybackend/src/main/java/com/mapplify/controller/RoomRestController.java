@@ -21,16 +21,12 @@ public class RoomRestController {
     public ResponseEntity<?> createRoom(@RequestBody Map<String, Object> body) {
 
         String ownerId = body.get("ownerId").toString();
-        double lat = Double.parseDouble(body.get("lat").toString());
-        double lng = Double.parseDouble(body.get("lng").toString());
 
-        Room room = roomService.createRoom(ownerId, lat, lng);
+        Room room = roomService.createRoom(ownerId, null, null);
 
         return ResponseEntity.ok(Map.of(
                 "roomId", room.getRoomId(),
-                "ownerId", ownerId,
-                "lat", room.getDestLat(),
-                "lng", room.getDestLng()
+                "ownerId", ownerId
         ));
     }
 
