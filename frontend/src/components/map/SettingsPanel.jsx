@@ -53,12 +53,10 @@ export default function SettingsPanel({
       <button
         type="button"
         onClick={onToggle}
-        className="absolute bottom-10 left-4 z-50 rounded-2xl border border-white/50 bg-white/85 px-4 py-2 text-sm font-semibold text-slate-900 shadow-lg backdrop-blur hover:bg-white"
+        className="absolute bottom-5 left-5 z-50 flex h-10 w-10 items-center justify-center rounded-full border border-white/50 bg-white/85 text-slate-900 shadow-lg backdrop-blur hover:bg-white"
+        title="Settings"
       >
-        <span className="inline-flex items-center gap-2">
-          <Settings className="h-4 w-4" />
-          Settings
-        </span>
+        <Settings className="h-5 w-5" />
       </button>
 
       <AnimatePresence>

@@ -3091,12 +3091,10 @@ export default function MapView() {
         <button
           type="button"
           onClick={handleRecenterButtonClick}
-          className="absolute bottom-10 right-4 z-50 rounded-2xl border border-white/50 bg-white/85 px-4 py-2 text-sm font-semibold text-slate-900 shadow-lg backdrop-blur hover:bg-white"
+          className="absolute bottom-5 right-5 z-50 flex h-10 w-10 items-center justify-center rounded-full border border-white/50 bg-white/85 text-slate-900 shadow-lg backdrop-blur hover:bg-white"
+          title="Recenter"
         >
-          <span className="inline-flex items-center gap-2">
-            <RouteIcon className="h-4 w-4" />
-            Recenter
-          </span>
+          <RouteIcon className="h-5 w-5" />
         </button>
 
         {wellbeingPromptOpen && (
