@@ -51,25 +51,26 @@ export default function Sidebar({
   };
 
   return (
-    <div className="absolute left-0 top-1/2 -translate-y-1/2 z-40 max-h-[85dvh] flex flex-col">
+    <div className="absolute left-0 top-[56%] -translate-y-1/2 z-40 h-[65vh] flex flex-col items-start min-h-0">
       <AnimatePresence mode="wait">
         {isExpanded ? (
           <motion.div
             key="expanded"
-            initial={{ x: -300, opacity: 0 }}
+            initial={{ x: -276, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
-            exit={{ x: -300, opacity: 0 }}
-            transition={{ duration: 0.28 }}
+            exit={{ x: -276, opacity: 0 }}
+            transition={{ duration: 0.28, ease: "easeOut" }}
             className="relative w-[276px] h-full"
           >
-            <div className="h-full bg-white/20 backdrop-blur-xl border border-white/40 shadow-lg rounded-r-2xl p-6 flex flex-col text-black overflow-y-auto max-h-[85dvh]">
-              <button
-                onClick={onToggle}
-                className="absolute -right-[43px] top-6 w-[43px] h-[43px] bg-white/20 backdrop-blur-xl border border-white/40 shadow-lg rounded-r-xl flex items-center justify-center hover:bg-white/30"
-              >
-                <ChevronLeft className="w-5 h-5 text-black" />
-              </button>
+            <button
+              onClick={onToggle}
+              className="absolute -right-[43px] top-6 w-[43px] h-[43px] bg-white/20 backdrop-blur-xl border border-slate-400/60 border-l-0 shadow-lg rounded-r-xl flex items-center justify-center hover:bg-white/30 z-50 pointer-events-auto"
+            >
+              <ChevronLeft className="w-5 h-5 text-black" />
+            </button>
 
+            <div className="h-full bg-white/20 backdrop-blur-xl border border-white/40 shadow-lg rounded-r-2xl pt-3 px-6 pb-6 flex flex-col text-black overflow-y-auto min-h-0">
+              {/* Sidebar Content */}
               {isInRoom ? (
                 <div className="mb-3 rounded-xl border bg-white/20 px-3 py-2">
                   <div className="grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2 min-w-0">
@@ -130,9 +131,8 @@ export default function Sidebar({
                 </div>
               )}
 
-              <div className="mt-6 flex-1 min-h-0 flex flex-col">
+              <div className="mt-6 flex-1 min-h-0 flex flex-col gap-6">
                 <div className="shrink-0">
-                  <h3 className="text-sm font-semibold mb-2">Destination</h3>
                   <SearchBar
                     onSelectDestination={onSelectDestination}
                     currentLocation={currentLocation}
@@ -141,7 +141,7 @@ export default function Sidebar({
                   />
                 </div>
 
-                <div className="mt-6 flex-1 min-h-0 flex flex-col">
+                <div className="flex-1 min-h-0 flex flex-col">
                   <div className="mb-2 shrink-0 flex items-center justify-between gap-2">
                     <h3 className="text-sm font-semibold">Members ({members.length})</h3>
                     <button
@@ -188,9 +188,7 @@ export default function Sidebar({
                   </ul>
                 </div>
 
-                <div className="mt-6 shrink-0">
-
-
+                <div className="shrink-0 mb-2">
                   <button
                     type="button"
                     onClick={onEndTrip}
@@ -211,7 +209,7 @@ export default function Sidebar({
             exit={{ x: -56, opacity: 0 }}
             transition={{ duration: 0.24 }}
             onClick={onToggle}
-            className="w-[45px] h-32 bg-white/20 backdrop-blur-xl border rounded-r-2xl shadow-lg flex items-center justify-center hover:bg-white/30"
+            className="w-[40px] h-32 bg-white/20 backdrop-blur-xl border border-slate-400/60 border-l-0 rounded-r-2xl shadow-lg flex items-center justify-center hover:bg-white/30"
           >
             <ChevronRight className="w-6 h-6 text-black" />
           </motion.button>

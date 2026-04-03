@@ -38,7 +38,7 @@ export default function RightSidebar({
 						onMouseEnter={onPanelMouseEnter}
 						onMouseLeave={onPanelMouseLeave}
 					>
-						<div className="h-full bg-white/20 backdrop-blur-xl border border-white/40 shadow-lg rounded-l-2xl p-6 flex flex-col text-black">
+						<div className="h-full bg-white/20 backdrop-blur-xl border border-white/40 shadow-lg rounded-l-2xl pt-3 px-6 pb-6 flex flex-col text-black">
 							<button
 								onClick={onToggle}
 								className="absolute -left-[43px] top-6 w-[43px] h-[43px] bg-white/20 backdrop-blur-xl border border-white/40 shadow-lg rounded-l-xl flex items-center justify-center hover:bg-white/30"
@@ -46,28 +46,25 @@ export default function RightSidebar({
 								<ChevronRight className="w-5 h-5 text-black" />
 							</button>
 
+							<div className="grid grid-cols-2 gap-2 mt-0">
+								<button
+									type="button"
+									onClick={onStartVoiceBroadcast}
+									disabled={!isInRoom || isVoiceBusy}
+									className="py-2 rounded-xl bg-indigo-600 text-white text-[10px] sm:text-xs font-semibold hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed px-1"
+								>
+									{isVoiceBusy ? "..." : "Broadcast Message"}
+								</button>
 
-
-
-
-
-							<button
-								type="button"
-								onClick={onStartVoiceBroadcast}
-								disabled={!isInRoom || isVoiceBusy}
-								className="mt-4 w-full py-2 rounded-xl bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-							>
-								{isVoiceBusy ? "Listening..." : "Voice Broadcast"}
-							</button>
-
-							<button
-								type="button"
-								onClick={onStartNearbyVoiceSearch}
-								disabled={!isInRoom || isVoiceBusy}
-								className="mt-2 w-full py-2 rounded-xl bg-amber-600 text-white font-semibold hover:bg-amber-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-							>
-								{isVoiceBusy ? "Listening..." : "Voice Nearby Search"}
-							</button>
+								<button
+									type="button"
+									onClick={onStartNearbyVoiceSearch}
+									disabled={!isInRoom || isVoiceBusy}
+									className="py-2 rounded-xl bg-amber-600 text-white text-[10px] sm:text-xs font-semibold hover:bg-amber-700 transition disabled:opacity-50 disabled:cursor-not-allowed px-1"
+								>
+									{isVoiceBusy ? "..." : "Find Nearby"}
+								</button>
+							</div>
 
 							{nearbyPlaces.length > 0 && (
 								<div className="mt-3 rounded-xl border bg-white/40 p-3 text-xs text-slate-700">
@@ -147,27 +144,28 @@ export default function RightSidebar({
 								type="button"
 								onClick={onTriggerSos}
 								disabled={!isInRoom}
-								className="w-full py-3 rounded-xl bg-rose-600 text-white font-semibold hover:bg-rose-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+								className="w-full py-2 rounded-xl bg-rose-600 text-white hover:bg-rose-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex flex-col items-center justify-center leading-tight"
 							>
-								<AlertTriangle className="w-4 h-4" />
-								SOS - Alert Party
+								<div className="flex items-center gap-2 font-bold text-sm">
+									<AlertTriangle className="w-4 h-4" />
+									SOS - Alert Party
+								</div>
+								<div className="text-[10px] opacity-90 mt-0.5">
+									Use only for urgent situations
+								</div>
 							</button>
-
-							<div className="text-xs text-gray-700">
-								Tip: Use SOS only for urgent situations.
-							</div>
 						</div>
 						</div>
 					</motion.div>
 				) : (
 					<motion.button
 						key="collapsed"
-						initial={{ x: 56, opacity: 0 }}
+						initial={{ x: 40, opacity: 0 }}
 						animate={{ x: 0, opacity: 1 }}
-						exit={{ x: 56, opacity: 0 }}
+						exit={{ x: 40, opacity: 0 }}
 						transition={{ duration: 0.24 }}
 						onClick={onToggle}
-						className="w-[45px] h-32 bg-white/20 backdrop-blur-xl border rounded-l-2xl shadow-lg flex items-center justify-center hover:bg-white/30"
+						className="w-[40px] h-32 bg-white/20 backdrop-blur-xl border border-slate-400/60 rounded-l-2xl shadow-lg flex items-center justify-center hover:bg-white/30"
 					>
 						<ChevronLeft className="w-6 h-6 text-black" />
 					</motion.button>

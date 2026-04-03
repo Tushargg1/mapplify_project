@@ -53,7 +53,7 @@ export default function SettingsPanel({
       <button
         type="button"
         onClick={onToggle}
-        className="absolute bottom-5 left-5 z-50 flex h-10 w-10 items-center justify-center rounded-full border border-white/50 bg-white/85 text-slate-900 shadow-lg backdrop-blur hover:bg-white"
+        className="absolute bottom-[10px] left-[10px] z-50 flex h-10 w-10 items-center justify-center rounded-full border border-white/50 bg-white/85 text-slate-900 shadow-lg backdrop-blur hover:bg-white"
         title="Settings"
       >
         <Settings className="h-5 w-5" />
