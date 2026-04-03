@@ -1,8 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { RetroGrid } from './RetroGrid';
-import { AnimatedThemeToggler } from './AnimatedThemeToggler';
-import Shuffle from './Shuffle';
+import { RetroGrid } from '../components/common/RetroGrid';
+import { AnimatedThemeToggler } from '../components/common/AnimatedThemeToggler';
+import Shuffle from '../components/common/Shuffle';
 
 export default function LandingPage() {
   return (

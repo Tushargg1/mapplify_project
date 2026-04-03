@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Apple, Github, Chrome, ArrowRight } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { AnimatedThemeToggler } from "./AnimatedThemeToggler";
-import { Ripple } from "./Ripple";
+import { AnimatedThemeToggler } from "../components/common/AnimatedThemeToggler";
+import { Ripple } from "../components/common/Ripple";
 import { loginUser, registerUser } from "../services/AuthService";
 
 const AUTH_STORAGE_KEY = "mapplify_auth_user";

@@ -6,12 +6,12 @@ import { Route as RouteIcon } from "lucide-react";
 import { Client } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
 
-import FriendsLayer from "./FriendsLayer";
-import Sidebar from "./UI/Sidebar";
-import RightSidebar from "./UI/RightSidebar";
-import DestinationPill from "./UI/DestinationPill";
-import ToastStack from "./UI/ToastStack";
-import SettingsPanel from "./UI/SettingsPanel";
+import FriendsLayer from "../components/map/FriendsLayer";
+import Sidebar from "../components/map/Sidebar";
+import RightSidebar from "../components/map/RightSidebar";
+import DestinationPill from "../components/map/DestinationPill";
+import ToastStack from "../components/map/ToastStack";
+import SettingsPanel from "../components/map/SettingsPanel";
 
 import { watchGPS } from "../services/GPSService";
 import { fetchRoute, reverseGeocode } from "../services/RouteService";

@@ -1,8 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import MapView from "./components/MapView";
-import LoginPage from "./components/LoginPage";
-import LandingPage from "./components/LandingPage";
-import AboutPage from "./components/AboutPage";
+import MapView from "./pages/MapView";
+import LoginPage from "./pages/LoginPage";
+import LandingPage from "./pages/LandingPage";
+import AboutPage from "./pages/AboutPage";
 
 const AUTH_STORAGE_KEY = "mapplify_auth_user";
 
@@ -18,7 +18,6 @@ function ProtectedMap() {
     return <Navigate to="/login" replace />;
   }
 }
-
 
 export default function App() {
   return (

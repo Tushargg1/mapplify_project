@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { AnimatedThemeToggler } from './AnimatedThemeToggler';
+import { AnimatedThemeToggler } from '../components/common/AnimatedThemeToggler';
 
 export default function AboutPage() {
   return (

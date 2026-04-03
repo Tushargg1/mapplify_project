@@ -12,7 +12,7 @@
 	<artifactId>mapplify</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>mapplify</name>
-	<description>Demo project for Spring Boot</description>
+	<description>Collaborative trip coordination with live location sharing and smart routing</description>
 	<url/>
 	<licenses>
 		<license/>
