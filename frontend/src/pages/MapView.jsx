@@ -536,7 +536,7 @@ export default function MapView() {
   const [mapHeading, setMapHeading] = useState(0);
   const [mapTilt, setMapTilt] = useState(0);
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
-  const [isRightSidebarExpanded, setIsRightSidebarExpanded] = useState(true);
+  const [isRightSidebarExpanded, setIsRightSidebarExpanded] = useState(false);
   const [isRightSidebarHovered, setIsRightSidebarHovered] = useState(false);
   const [rightSidebarInteractionTick, setRightSidebarInteractionTick] = useState(0);
   const [routeStats, setRouteStats] = useState({});
@@ -724,6 +724,7 @@ export default function MapView() {
     setIsRightSidebarExpanded((prev) => {
       const next = !prev;
       setIsRightSidebarHovered(false);
+      if (next) setIsSidebarExpanded(false);
       return next;
     });
   }
@@ -3038,7 +3039,13 @@ export default function MapView() {
 
         <Sidebar
           isExpanded={isSidebarExpanded}
-          onToggle={() => setIsSidebarExpanded((value) => !value)}
+          onToggle={() => {
+            setIsSidebarExpanded((value) => {
+              const next = !value;
+              if (next) setIsRightSidebarExpanded(false);
+              return next;
+            });
+          }}
           displayName={displayName}
           onSetDisplayName={setDisplayName}
           myRoom={myRoom}

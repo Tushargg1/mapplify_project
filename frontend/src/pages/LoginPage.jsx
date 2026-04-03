@@ -107,11 +107,16 @@ function toFriendlyAuthError(error, authMode) {
   return error?.message || "Authentication failed. Please try again.";
 }
 
-function validateAuthFields({ authMode, fullName, identifier, passcode, confirmPasscode }) {
+function validateAuthFields({ authMode, fullName, identifier, passcode, confirmPasscode, phoneNumber }) {
   const nextErrors = {};
 
-  if (authMode === "signup" && !fullName.trim()) {
-    nextErrors.fullName = "Full name is required.";
+  if (authMode === "signup") {
+    if (!fullName.trim()) {
+      nextErrors.fullName = "Full name is required.";
+    }
+    if (!phoneNumber?.trim()) {
+      nextErrors.phoneNumber = "Phone number is required.";
+    }
   }
 
   if (!identifier.trim()) {
@@ -149,6 +154,7 @@ const LoginPage = () => {
   const [identifier, setIdentifier] = useState("");
   const [passcode, setPasscode] = useState("");
   const [confirmPasscode, setConfirmPasscode] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [errors, setErrors] = useState({});
   const [apiError, setApiError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -201,6 +207,7 @@ const LoginPage = () => {
     setApiError("");
     if (mode === "login") {
       setConfirmPasscode("");
+      setPhoneNumber("");
     }
   };
 
@@ -213,6 +220,7 @@ const LoginPage = () => {
       identifier,
       passcode,
       confirmPasscode,
+      phoneNumber,
     });
 
     setErrors(nextErrors);
@@ -230,7 +238,7 @@ const LoginPage = () => {
       if (authMode === "signup") {
         response = await registerUser({
           name: fullName.trim(),
-          fullName: fullName.trim(),
+          phoneNumber: phoneNumber.trim(),
           email,
           password: passcode,
         });
@@ -267,6 +275,14 @@ const LoginPage = () => {
     }
   };
 
+  const onPhoneNumberChange = (event) => {
+    setPhoneNumber(event.target.value);
+    if (apiError) setApiError("");
+    if (errors.phoneNumber) {
+      setErrors((prev) => ({ ...prev, phoneNumber: undefined }));
+    }
+  };
+
   const onPasscodeChange = (event) => {
     setPasscode(event.target.value);
     if (apiError) setApiError("");
@@ -291,7 +307,7 @@ const LoginPage = () => {
     isSubmitting ||
     !identifier.trim() ||
     !passcode ||
-    (authMode === "signup" && (!fullName.trim() || !confirmPasscode));
+    (authMode === "signup" && (!fullName.trim() || !phoneNumber.trim() || !confirmPasscode));
 
   const topTextClass = isDarkTheme ? "text-white" : "text-black";
   const cardTextClass = isDarkTheme ? "text-white" : "text-black";
@@ -453,6 +469,22 @@ const LoginPage = () => {
                 />
                 {errors.fullName && (
                   <p className="text-xs font-medium text-rose-700">{errors.fullName}</p>
+                )}
+              </div>
+            )}
+
+            {authMode === "signup" && (
+              <div className="space-y-2">
+                <input
+                  value={phoneNumber}
+                  onChange={onPhoneNumberChange}
+                  type="tel"
+                  autoComplete="tel"
+                  placeholder="Phone Number"
+                  className={inputClass}
+                />
+                {errors.phoneNumber && (
+                  <p className="text-xs font-medium text-rose-700">{errors.phoneNumber}</p>
                 )}
               </div>
             )}
