@@ -1907,16 +1907,18 @@ export default function MapView() {
   }
 
   function connectToRoom(roomId) {
+    if (stompRef.current) return;
+
     const socket = new SockJS(`${BACKEND_BASE_URL}/ws`);
 
     const client = new Client({
       webSocketFactory: () => socket,
       reconnectDelay: 2000,
     });
+    
+    stompRef.current = client;
 
     client.onConnect = () => {
-      stompRef.current = client;
-      pushToast(`Connected to room ${roomId}`, "success");
 
       client.subscribe(`/topic/rooms/${roomId}`, (frame) => {
         const msg = JSON.parse(frame.body);
@@ -1966,6 +1968,7 @@ export default function MapView() {
           const incoming = { lat, lng };
           if (isSamePoint(destinationRef.current, incoming)) return;
 
+          const wasNull = !destinationRef.current;
           setDestination({ ...incoming, label: "Resolving destination..." });
           setMapCenter(incoming);
           if (map.current?.panTo) {
@@ -1986,18 +1989,26 @@ export default function MapView() {
               });
             });
 
-          pushToast("Shared destination changed", "info");
+          if (!wasNull) {
+            pushToast("Shared destination changed", "info");
+          }
           return;
         }
 
         if (msg.type === "presence") {
           const memberName = msg.user?.name || msg.user?.userId || "Member";
+          const isMe = String(msg.user?.userId) === String(userId);
+          
           if (msg.action === "join") {
-            pushToast(`${memberName} joined`, "info", 2200);
+            if (!isMe) {
+              pushToast(`${memberName} joined`, "info", 2200);
+            }
           }
 
           if (msg.action === "leave") {
-            pushToast(`${memberName} left`, "info", 2200);
+            if (!isMe) {
+              pushToast(`${memberName} left`, "info", 2200);
+            }
 
             const leavingUserId = String(msg.user?.userId || "");
             if (!leavingUserId) return;
@@ -2190,6 +2201,10 @@ export default function MapView() {
     }
 
     try {
+      setDestination(null);
+      destinationRef.current = null;
+      setPlannedStops([]);
+
       const centerValue = map.current?.getCenter?.();
       const center = centerValue
         ? {
@@ -2307,10 +2322,12 @@ export default function MapView() {
       distanceMeters: null,
     }));
     resetRouteThrottleState();
-    pushToast(toastMessage, "info");
     resetInactivityTracker(false);
     localStorage.removeItem(STORAGE_KEYS.roomId);
-    pushToast("Left room", "info");
+    
+    if (toastMessage) {
+      pushToast(toastMessage, "info");
+    }
 
     if (stompRef.current) {
       stompRef.current.deactivate();
@@ -2361,7 +2378,7 @@ export default function MapView() {
   }, [broadcastPreviewAudioUrl]);
 
   useEffect(() => {
-    if (!myRoom || stompRef.current?.active) return;
+    if (!myRoom || stompRef.current) return;
     connectToRoom(myRoom);
   }, [myRoom]);
 
