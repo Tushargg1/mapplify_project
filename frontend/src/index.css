@@ -51,8 +51,14 @@
 html,
 body,
 #root {
+  min-height: 100vh;
+  min-height: 100dvh;
+  height: 100dvh;
   background: var(--page-bg);
   color: var(--page-fg);
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
 }
 
 .backdrop-blur-3xl {
