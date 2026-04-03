@@ -1,0 +1,61 @@
+@import "tailwindcss";
+
+@layer utilities {
+  .animate-ripple {
+    animation: ripple var(--duration, 2s) ease calc(var(--i, 0) * 0.2s) infinite;
+  }
+}
+
+@keyframes ripple {
+  0%,
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(0.9);
+  }
+}
+
+:root {
+  --page-bg: #eef2ff;
+  --page-fg: #0f172a;
+  --foreground: var(--page-fg);
+  --muted-fg: #334155;
+  --card-bg: rgba(255, 255, 255, 0.74);
+  --card-border: rgba(15, 23, 42, 0.14);
+  --field-bg: rgba(255, 255, 255, 0.86);
+  --field-border: rgba(15, 23, 42, 0.16);
+  --chip-bg: rgba(15, 23, 42, 0.06);
+  --chip-bg-hover: rgba(15, 23, 42, 0.12);
+  --button-bg: #0f172a;
+  --button-fg: #f8fafc;
+  --button-hover-bg: #1e293b;
+}
+
+.dark {
+  --page-bg: #000000;
+  --page-fg: #ffffff;
+  --foreground: var(--page-fg);
+  --muted-fg: #94a3b8;
+  --card-bg: rgba(10, 10, 10, 0.7);
+  --card-border: rgba(255, 255, 255, 0.1);
+  --field-bg: rgba(255, 255, 255, 0.03);
+  --field-border: rgba(255, 255, 255, 0.08);
+  --chip-bg: rgba(255, 255, 255, 0.04);
+  --chip-bg-hover: rgba(255, 255, 255, 0.1);
+  --button-bg: #ffffff;
+  --button-fg: #111827;
+  --button-hover-bg: #e5e7eb;
+}
+
+html,
+body,
+#root {
+  background: var(--page-bg);
+  color: var(--page-fg);
+}
+
+.backdrop-blur-3xl {
+  backdrop-filter: blur(60px);
+  -webkit-backdrop-filter: blur(60px);
+}
