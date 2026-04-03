@@ -2965,7 +2965,7 @@ export default function MapView() {
     <APIProvider apiKey={googleMapsApiKey} libraries={["marker", "places"]}>
       <div style={{ height: "100dvh", width: "100vw" }} className="relative overflow-hidden bg-slate-950">
         <GoogleMap
-          className="absolute inset-0 w-full h-full z-10"
+          className="absolute top-0 left-0 w-full h-[105%] z-10"
           center={mapCenter}
           zoom={mapZoom}
           heading={mapHeading}
