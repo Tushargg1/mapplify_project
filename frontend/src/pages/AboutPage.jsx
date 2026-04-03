@@ -170,53 +170,64 @@ export default function AboutPage() {
         </div>
       </div>
 
-      {/* Footer Section */}
-      <footer className="w-full border-t border-[var(--card-border)] bg-[var(--card-bg)]/50 backdrop-blur-xl mt-auto z-10 relative">
-        <div className="max-w-6xl mx-auto px-6 py-12 flex flex-col md:flex-row justify-between gap-8">
-          <div className="space-y-4 md:max-w-xs">
-            <h2 className="text-xl font-bold tracking-tight bg-gradient-to-br from-blue-500 to-emerald-400 bg-clip-text text-transparent">Mapplify</h2>
-            <p className="text-xs text-[var(--muted-fg)] leading-relaxed">
-              Empowering safe, seamless, and synchronized travel. Bringing collaborative routing and AI-driven security to groups around the globe.
-            </p>
-            <div className="flex gap-4 pt-2">
-              <a href="#" className="p-2 rounded-full bg-[var(--chip-bg)] text-[var(--muted-fg)] hover:text-blue-500 hover:bg-blue-500/10 transition-colors">
-                <Twitter className="w-4 h-4" />
-              </a>
-              <a href="#" className="p-2 rounded-full bg-[var(--chip-bg)] text-[var(--muted-fg)] hover:text-emerald-500 hover:bg-emerald-500/10 transition-colors">
-                <Github className="w-4 h-4" />
-              </a>
-              <a href="#" className="p-2 rounded-full bg-[var(--chip-bg)] text-[var(--muted-fg)] hover:text-indigo-500 hover:bg-indigo-500/10 transition-colors">
-                <Linkedin className="w-4 h-4" />
-              </a>
+      {/* Premium Footer Section */}
+      <footer className="w-full mt-auto relative z-10 shrink-0">
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[var(--card-bg)] pointer-events-none opacity-50" />
+        <div className="relative border-t border-[var(--card-border)] bg-[var(--card-bg)]/80 backdrop-blur-2xl">
+          <div className="max-w-6xl mx-auto px-6 py-16 flex flex-col md:flex-row justify-between gap-12">
+            <div className="space-y-6 md:max-w-sm">
+              <Link to="/" className="inline-block">
+                <h2 className="text-2xl font-bold tracking-tight bg-gradient-to-br from-blue-500 to-emerald-400 bg-clip-text text-transparent">Mapplify</h2>
+              </Link>
+              <p className="text-sm text-[var(--muted-fg)] leading-relaxed font-medium">
+                Empowering safe, seamless, and synchronized travel. Bringing collaborative routing and AI-driven security to groups around the globe.
+              </p>
+              <div className="flex gap-3 pt-2">
+                <a href="#" className="flex items-center justify-center w-10 h-10 rounded-xl bg-[var(--chip-bg)] border border-[var(--card-border)] text-[var(--muted-fg)] hover:text-sky-400 hover:border-sky-400/50 hover:bg-sky-400/10 transition-all shadow-sm">
+                  <Twitter className="w-4 h-4" />
+                </a>
+                <a href="#" className="flex items-center justify-center w-10 h-10 rounded-xl bg-[var(--chip-bg)] border border-[var(--card-border)] text-[var(--muted-fg)] hover:text-emerald-400 hover:border-emerald-400/50 hover:bg-emerald-400/10 transition-all shadow-sm">
+                  <Github className="w-4 h-4" />
+                </a>
+                <a href="#" className="flex items-center justify-center w-10 h-10 rounded-xl bg-[var(--chip-bg)] border border-[var(--card-border)] text-[var(--muted-fg)] hover:text-indigo-400 hover:border-indigo-400/50 hover:bg-indigo-400/10 transition-all shadow-sm">
+                  <Linkedin className="w-4 h-4" />
+                </a>
+              </div>
+            </div>
+            
+            <div className="flex flex-wrap gap-12 md:gap-24">
+              <div className="space-y-5">
+                <h3 className="text-[13px] font-bold tracking-widest uppercase text-[var(--page-fg)] opacity-90">Platform</h3>
+                <ul className="space-y-4 text-sm font-medium text-[var(--muted-fg)]">
+                  <li><Link to="/" className="hover:text-blue-500 transition-colors">Home</Link></li>
+                  <li><Link to="/about" className="hover:text-blue-500 transition-colors">About Us</Link></li>
+                  <li><Link to="/login" className="hover:text-blue-500 transition-colors">Sign Up</Link></li>
+                  <li><a href="mailto:mapplify@gmail.com" className="hover:text-blue-500 transition-colors">Contact Support</a></li>
+                </ul>
+              </div>
+
+              <div className="space-y-5">
+                <h3 className="text-[13px] font-bold tracking-widest uppercase text-[var(--page-fg)] opacity-90">Legal</h3>
+                <ul className="space-y-4 text-sm font-medium text-[var(--muted-fg)]">
+                  <li><Link to="/legal/privacy" className="hover:text-emerald-500 transition-colors flex items-center gap-1.5 group">Privacy Policy <ArrowRight className="w-3.5 h-3.5 opacity-0 -ml-3 group-hover:opacity-100 group-hover:ml-0 transition-all text-emerald-500" /></Link></li>
+                  <li><Link to="/legal/terms" className="hover:text-emerald-500 transition-colors flex items-center gap-1.5 group">Terms & Conditions <ArrowRight className="w-3.5 h-3.5 opacity-0 -ml-3 group-hover:opacity-100 group-hover:ml-0 transition-all text-emerald-500" /></Link></li>
+                  <li><Link to="/legal/cookies" className="hover:text-emerald-500 transition-colors flex items-center gap-1.5 group">Cookie Policy <ArrowRight className="w-3.5 h-3.5 opacity-0 -ml-3 group-hover:opacity-100 group-hover:ml-0 transition-all text-emerald-500" /></Link></li>
+                  <li><Link to="/legal/security" className="hover:text-emerald-500 transition-colors flex items-center gap-1.5 group">Data Security <ArrowRight className="w-3.5 h-3.5 opacity-0 -ml-3 group-hover:opacity-100 group-hover:ml-0 transition-all text-emerald-500" /></Link></li>
+                </ul>
+              </div>
             </div>
           </div>
           
-          <div className="grid grid-cols-2 gap-8 md:gap-16">
-            <div className="space-y-4">
-              <h3 className="text-sm font-semibold tracking-wider uppercase opacity-80">Company</h3>
-              <ul className="space-y-3 text-sm text-[var(--muted-fg)]">
-                <li><Link to="/about" className="hover:text-[var(--page-fg)] transition-colors">About Us</Link></li>
-                <li><a href="#" className="hover:text-[var(--page-fg)] transition-colors">Careers</a></li>
-                <li><a href="#" className="hover:text-[var(--page-fg)] transition-colors">Contact</a></li>
-                <li><a href="#" className="hover:text-[var(--page-fg)] transition-colors">Blog</a></li>
-              </ul>
-            </div>
-            
-            <div className="space-y-4">
-              <h3 className="text-sm font-semibold tracking-wider uppercase opacity-80">Legal</h3>
-              <ul className="space-y-3 text-sm text-[var(--muted-fg)]">
-                <li><a href="#" className="hover:text-[var(--page-fg)] transition-colors">Privacy Policy</a></li>
-                <li><a href="#" className="hover:text-[var(--page-fg)] transition-colors">Terms & Conditions</a></li>
-                <li><a href="#" className="hover:text-[var(--page-fg)] transition-colors">Cookie Policy</a></li>
-                <li><a href="#" className="hover:text-[var(--page-fg)] transition-colors">Data Security</a></li>
-              </ul>
+          <div className="max-w-6xl mx-auto px-6">
+            <div className="w-full border-t border-[var(--card-border)] py-6 flex flex-col md:flex-row items-center justify-between gap-4">
+              <p className="text-[13px] text-[var(--muted-fg)] font-medium">
+                &copy; {new Date().getFullYear()} Mapplify Technologies.
+              </p>
+              <div className="text-[13px] text-[var(--muted-fg)] font-medium flex items-center gap-1.5">
+                Designed with <span className="text-rose-500 text-base leading-none animate-pulse">&hearts;</span> for safe travels.
+              </div>
             </div>
           </div>
-        </div>
-        <div className="w-full border-t border-[var(--card-border)]/50 py-6 text-center">
-          <p className="text-xs text-[var(--muted-fg)]">
-            &copy; {new Date().getFullYear()} Mapplify Technologies. All rights reserved.
-          </p>
         </div>
       </footer>
       </div>

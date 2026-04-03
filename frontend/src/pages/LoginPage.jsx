@@ -251,6 +251,11 @@ const LoginPage = () => {
 
       const authPayload = buildStoredAuthProfile(response, authMode, fullName.trim(), email);
       localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(authPayload));
+      
+      if (authMode === "signup") {
+        localStorage.setItem("mapplify_show_tour", "true");
+      }
+      
       setIsPostAuthLoading(true);
     } catch (error) {
       setApiError(toFriendlyAuthError(error, authMode));

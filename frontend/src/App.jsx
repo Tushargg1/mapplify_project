@@ -3,6 +3,7 @@ import MapView from "./pages/MapView";
 import LoginPage from "./pages/LoginPage";
 import LandingPage from "./pages/LandingPage";
 import AboutPage from "./pages/AboutPage";
+import LegalPage from "./pages/LegalPage";
 
 const AUTH_STORAGE_KEY = "mapplify_auth_user";
 
@@ -25,6 +26,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/about" element={<AboutPage />} />
+        <Route path="/legal/:docId" element={<LegalPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/map" element={<ProtectedMap />} />
       </Routes>

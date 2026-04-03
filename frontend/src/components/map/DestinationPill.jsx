@@ -37,7 +37,7 @@ export default function DestinationPill({
         transition={{ duration: 0.36, ease: "easeOut" }}
         type="button"
         onClick={() => setOpen((value) => !value)}
-        className="flex w-full items-center justify-between gap-3 rounded-2xl border border-white/45 bg-white/25 px-4 py-2.5 shadow-[0_8px_28px_rgba(0,0,0,0.18)] backdrop-blur-xl"
+        className="tour-destination flex w-full items-center justify-between gap-3 rounded-2xl border border-white/45 bg-white/25 px-4 py-2.5 shadow-[0_8px_28px_rgba(0,0,0,0.18)] backdrop-blur-xl"
         role="status"
         aria-live="polite"
         aria-label={`Destination: ${destination}, ETA: ${eta}, Distance: ${formatDistance(navigationMonitor?.distanceMeters)}, Speed: ${formatSpeed(navigationMonitor?.speedKmh)}, Next turn: ${nextTurnCue || "Continue"} ${nextTurnInstruction || "No active turn"}`}

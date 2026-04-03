@@ -64,7 +64,7 @@ export default function Sidebar({
           >
             <button
               onClick={onToggle}
-              className="absolute -right-[43px] top-6 w-[43px] h-[43px] bg-white/20 backdrop-blur-xl border border-slate-400/60 border-l-0 shadow-lg rounded-r-xl flex items-center justify-center hover:bg-white/30 z-50 pointer-events-auto"
+              className="tour-left-sidebar absolute -right-[43px] top-6 w-[43px] h-[43px] bg-white/20 backdrop-blur-xl border border-slate-400/60 border-l-0 shadow-lg rounded-r-xl flex items-center justify-center hover:bg-white/30 z-50 pointer-events-auto"
             >
               <ChevronLeft className="w-5 h-5 text-black" />
             </button>
@@ -209,7 +209,7 @@ export default function Sidebar({
             exit={{ x: -56, opacity: 0 }}
             transition={{ duration: 0.24 }}
             onClick={onToggle}
-            className="w-[40px] h-32 bg-white/20 backdrop-blur-xl border border-slate-400/60 border-l-0 rounded-r-2xl shadow-lg flex items-center justify-center hover:bg-white/30"
+            className="tour-left-sidebar w-[40px] h-32 bg-white/20 backdrop-blur-xl border border-slate-400/60 border-l-0 rounded-r-2xl shadow-lg flex items-center justify-center hover:bg-white/30"
           >
             <ChevronRight className="w-6 h-6 text-black" />
           </motion.button>

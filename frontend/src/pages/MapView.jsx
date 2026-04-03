@@ -10,7 +10,9 @@ import FriendsLayer from "../components/map/FriendsLayer";
 import Sidebar from "../components/map/Sidebar";
 import RightSidebar from "../components/map/RightSidebar";
 import DestinationPill from "../components/map/DestinationPill";
+import { Play, Pause, Square, ExternalLink, Settings, Navigation2, FileAudio, Eye, ShieldAlert, Search, AlertCircle, Maximize2, Minimize2, RadioReceiver, Mic, StopCircle, RefreshCcw } from "lucide-react";
 import ToastStack from "../components/map/ToastStack";
+import { Joyride, STATUS } from 'react-joyride';
 import SettingsPanel from "../components/map/SettingsPanel";
 
 import { watchGPS } from "../services/GPSService";
@@ -538,6 +540,70 @@ export default function MapView() {
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
   const [isRightSidebarExpanded, setIsRightSidebarExpanded] = useState(false);
   const [isRightSidebarHovered, setIsRightSidebarHovered] = useState(false);
+
+  // Joyride Tour State
+  const [runTour, setRunTour] = useState(false);
+  
+  useEffect(() => {
+    const showTourFlag = localStorage.getItem("mapplify_show_tour");
+    const tourCompleted = localStorage.getItem("mapplify_tour_completed");
+    const isGuest = String(userId).startsWith("guest-");
+    
+    // Trigger tour ONLY if:
+    // 1. User just signed up (showTourFlag is true)
+    // 2. OR User is NOT a guest AND hasn't completed the tour yet.
+    // However, the user explicitly asked for "signup only", so we will prioritize the signup flag.
+    if (!tourCompleted && !isGuest && showTourFlag === "true") {
+      const t = setTimeout(() => setRunTour(true), 2000);
+      return () => clearTimeout(t);
+    }
+  }, [userId]);
+
+  const handleJoyrideCallback = (data) => {
+    const { status, action } = data;
+    const finishedStatuses = [STATUS.FINISHED, STATUS.SKIPPED];
+    
+    // If they hit skip, finish, or manually X out of the tour, never show it again
+    if (finishedStatuses.includes(status) || action === 'close') {
+      setRunTour(false);
+      localStorage.setItem("mapplify_tour_completed", "true");
+      localStorage.removeItem("mapplify_show_tour"); // Clear the one-time signup flag
+    }
+  };
+
+  const tourSteps = [
+    {
+      target: '.tour-left-sidebar',
+      title: '📍 Group Coordination',
+      content: 'Tap the handle to manage your room, invite others, and plot collaborative routes here.',
+      disableBeacon: true,
+      placement: 'auto'
+    },
+    {
+      target: '.tour-destination',
+      title: '🗺️ Live Navigation',
+      content: 'Shows your active destination, ETA, and turn-by-turn directions at a glance.',
+      placement: 'bottom'
+    },
+    {
+      target: '.tour-right-sidebar',
+      title: '🛡️ Action Center',
+      content: 'Tap the handle for SOS alerts, voice broadcasting, and finding local safe stops.',
+      placement: 'auto'
+    },
+    {
+      target: '.tour-settings',
+      title: '⚙️ Profile & History',
+      content: 'Manage your profile and tap to see historical trip logs and emergency recordings.',
+      placement: 'auto'
+    },
+    {
+      target: '.tour-recenter',
+      title: '🎯 Snap to Location',
+      content: 'Tap this anytime to instantly snap the camera back to your current position.',
+      placement: 'top'
+    }
+  ];
   const [rightSidebarInteractionTick, setRightSidebarInteractionTick] = useState(0);
   const [routeStats, setRouteStats] = useState({});
   const [toasts, setToasts] = useState([]);
@@ -3022,19 +3088,75 @@ export default function MapView() {
           <FriendsLayer members={members} userId={userId} />
         </GoogleMap>
 
-        <div className="pointer-events-none absolute inset-x-0 top-0 z-20 h-28 bg-linear-to-b from-black/30 via-black/10 to-transparent" />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-24 bg-linear-to-t from-black/25 via-black/10 to-transparent" />
 
         <ToastStack toasts={toasts} onDismiss={dismissToast} />
-        <DestinationPill
-          destination={pillDestination}
-          eta={pillEta}
-          navigationMonitor={navigationMonitor}
-          nextTurnCue={nextTurn?.cue || "Continue"}
-          nextTurnInstruction={nextTurn?.instruction || "No active turn"}
-          nextTurnDistance={typeof nextTurn?.distance === "number" ? nextTurn.distance : null}
-          turnByTurnSteps={turnByTurnSteps}
-          activeStepIndex={activeStepIndex}
+        <div className="relative z-30">
+          <DestinationPill
+            destination={pillDestination}
+            eta={pillEta}
+            navigationMonitor={navigationMonitor}
+            nextTurnCue={nextTurn?.cue || "Continue"}
+            nextTurnInstruction={nextTurn?.instruction || "No active turn"}
+            nextTurnDistance={typeof nextTurn?.distance === "number" ? nextTurn.distance : null}
+            turnByTurnSteps={turnByTurnSteps}
+            activeStepIndex={activeStepIndex}
+          />
+        </div>
+
+        <Joyride
+          steps={tourSteps}
+          run={runTour}
+          continuous={true}
+          showProgress={true}
+          showSkipButton={true}
+          hideCloseButton={true}
+          scrollToFirstStep={true}
+          locale={{
+            last: 'Start Driving',
+            skip: 'Skip Tour',
+            next: 'Next',
+            back: 'Back'
+          }}
+          disableScrolling={true}
+          disableScrollParentFix={true}
+          callback={handleJoyrideCallback}
+          styles={{
+            options: {
+              primaryColor: '#0ea5e9', // Sky 500
+              textColor: '#0f172a', // Slate 900
+              zIndex: 10000,
+              spotlightPadding: 0,
+            },
+            tooltip: {
+              borderRadius: '16px',
+              padding: '24px',
+            },
+            tooltipContent: {
+              textAlign: 'left',
+              padding: '10px 0',
+            },
+            tooltipTitle: {
+              textAlign: 'left',
+              fontWeight: '700',
+              fontSize: '18px',
+            },
+            buttonNext: {
+              backgroundColor: '#0ea5e9',
+              borderRadius: '8px',
+              padding: '10px 20px',
+              fontWeight: '600',
+            },
+            buttonBack: {
+              marginRight: '10px',
+              color: '#64748b',
+              fontWeight: '600',
+            },
+            buttonSkip: {
+              color: '#94a3b8',
+              fontWeight: '500',
+            }
+          }}
         />
 
         <Sidebar
@@ -3115,7 +3237,7 @@ export default function MapView() {
         <button
           type="button"
           onClick={handleRecenterButtonClick}
-          className="absolute bottom-[10px] right-[10px] z-50 flex h-10 w-10 items-center justify-center rounded-full border border-white/50 bg-white/85 text-slate-900 shadow-lg backdrop-blur hover:bg-white"
+          className="tour-recenter absolute bottom-[10px] right-[10px] z-50 flex h-10 w-10 items-center justify-center rounded-full border border-white/50 bg-white/85 text-slate-900 shadow-lg backdrop-blur hover:bg-white"
           title="Recenter"
         >
           <RouteIcon className="h-5 w-5" />

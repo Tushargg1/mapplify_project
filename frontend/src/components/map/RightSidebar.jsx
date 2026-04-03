@@ -24,7 +24,7 @@ export default function RightSidebar({
 	const [isNearbyResultsOpen, setIsNearbyResultsOpen] = useState(true);
 
 	return (
-		<div className="absolute right-0 top-[56%] -translate-y-1/2 z-40 h-[65vh]">
+		<div className="absolute right-0 top-[56%] -translate-y-1/2 z-40 h-[65vh] min-w-0">
 			<AnimatePresence mode="wait">
 				{isExpanded ? (
 					<motion.div
@@ -41,7 +41,7 @@ export default function RightSidebar({
 						<div className="h-full bg-white/20 backdrop-blur-xl border border-white/40 shadow-lg rounded-l-2xl pt-3 px-6 pb-6 flex flex-col text-black">
 							<button
 								onClick={onToggle}
-								className="absolute -left-[43px] top-6 w-[43px] h-[43px] bg-white/20 backdrop-blur-xl border border-white/40 shadow-lg rounded-l-xl flex items-center justify-center hover:bg-white/30"
+								className="tour-right-sidebar absolute -left-[43px] top-6 w-[43px] h-[43px] bg-white/20 backdrop-blur-xl border border-white/40 shadow-lg rounded-l-xl flex items-center justify-center hover:bg-white/30"
 							>
 								<ChevronRight className="w-5 h-5 text-black" />
 							</button>
@@ -160,12 +160,12 @@ export default function RightSidebar({
 				) : (
 					<motion.button
 						key="collapsed"
-						initial={{ x: 40, opacity: 0 }}
+						initial={{ x: 56, opacity: 0 }}
 						animate={{ x: 0, opacity: 1 }}
-						exit={{ x: 40, opacity: 0 }}
+						exit={{ x: 56, opacity: 0 }}
 						transition={{ duration: 0.24 }}
 						onClick={onToggle}
-						className="w-[40px] h-32 bg-white/20 backdrop-blur-xl border border-slate-400/60 rounded-l-2xl shadow-lg flex items-center justify-center hover:bg-white/30"
+						className="tour-right-sidebar w-[40px] h-32 bg-white/20 backdrop-blur-xl border border-white/40 shadow-lg rounded-l-2xl flex items-center justify-center hover:bg-white/30"
 					>
 						<ChevronLeft className="w-6 h-6 text-black" />
 					</motion.button>
