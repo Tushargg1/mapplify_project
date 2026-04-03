@@ -559,7 +559,7 @@ const LoginPage = () => {
           </form>
 
           <div className={`pt-1 text-center text-xs ${helperTextClass}`}>
-            Learn more about Maplify on the{" "}
+            Learn more about Mapplify on the{" "}
             <Link to="/about" className={helperLinkClass}>
               About page
             </Link>

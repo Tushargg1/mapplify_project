@@ -20,7 +20,7 @@ export default function LandingPage() {
       </div>
       <div className="relative z-20 flex w-full max-w-4xl flex-col items-center gap-8 text-center">
         <Shuffle
-          text="Maplify"
+          text="Mapplify"
           className="font-sans normal-case text-6xl font-semibold tracking-[0.03em] leading-tight sm:text-7xl"
           shuffleDirection="left"
           duration={2.0}
