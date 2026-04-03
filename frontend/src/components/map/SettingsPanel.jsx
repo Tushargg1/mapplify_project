@@ -48,15 +48,17 @@ export default function SettingsPanel({
     }
   }
 
+  const initials = profileName?.charAt(0)?.toUpperCase() || "U";
+
   return (
     <>
       <button
         type="button"
         onClick={onToggle}
-        className="tour-settings absolute bottom-[10px] left-[10px] z-50 flex h-10 w-10 items-center justify-center rounded-full border border-white/50 bg-white/85 text-slate-900 shadow-lg backdrop-blur hover:bg-white"
+        className="tour-settings absolute bottom-[14px] left-[14px] z-50 flex h-11 w-11 items-center justify-center rounded-2xl border border-white/40 bg-white/30 text-white shadow-xl backdrop-blur-2xl hover:bg-white/40 transition-all active:scale-95"
         title="Settings"
       >
-        <Settings className="h-5 w-5" />
+        <Settings className="h-5 w-5 drop-shadow-sm" />
       </button>
 
       <AnimatePresence>
@@ -65,141 +67,181 @@ export default function SettingsPanel({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 z-[70] bg-black/35"
+            className="absolute inset-0 z-[70] bg-black/40 backdrop-blur-[2px]"
             onClick={onToggle}
           >
             <motion.div
-              initial={{ x: -380, opacity: 0.9 }}
+              initial={{ x: -400, opacity: 0.8 }}
               animate={{ x: 0, opacity: 1 }}
-              exit={{ x: -380, opacity: 0.9 }}
-              transition={{ duration: 0.22 }}
-              className="absolute bottom-0 left-0 h-[86vh] w-[360px] max-w-[92vw] rounded-tr-2xl border border-white/50 bg-white/90 p-4 shadow-2xl backdrop-blur"
+              exit={{ x: -400, opacity: 0.8 }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="absolute bottom-0 left-0 h-[88vh] w-[370px] max-w-[94vw] rounded-tr-[2.5rem] border-r border-t border-white/60 bg-white/90 p-6 shadow-2xl backdrop-blur-3xl flex flex-col"
               onClick={(event) => event.stopPropagation()}
             >
-              <div className="mb-3 flex items-start justify-between gap-3">
-                <div>
-                  <h2 className="text-lg font-semibold text-slate-900">Profile Settings</h2>
-                  <p className="text-xs text-slate-600">{profileName || "User"} ({profileId || "guest"})</p>
-                  <p className="text-[11px] text-slate-500">{profileEmail || "No email"} | {profilePhone || "No phone"}</p>
+              <div className="mb-6 flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-2xl bg-slate-900/10 border border-slate-900/5 flex items-center justify-center text-slate-900 font-bold text-lg shadow-sm">
+                    {initials}
+                  </div>
+                  <div className="leading-tight">
+                    <h2 className="text-lg font-bold text-slate-900 tracking-tight">{profileName || "Anonymous User"}</h2>
+                    <p className="text-[11px] text-slate-500 font-medium uppercase tracking-wider">{profileEmail || "No Email Provided"}</p>
+                  </div>
                 </div>
                 <button
                   type="button"
                   onClick={onToggle}
-                  className="rounded-lg border border-slate-300 bg-white p-1.5 text-slate-700 hover:bg-slate-100"
+                  className="rounded-xl border border-slate-200 bg-slate-100 p-2 text-slate-400 hover:bg-slate-200 hover:text-slate-600 transition-colors"
                 >
                   <X className="h-4 w-4" />
                 </button>
               </div>
 
-              <button
-                type="button"
-                onClick={onLogout}
-                className="mb-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-3 py-2 text-sm font-semibold text-white hover:bg-slate-800"
-              >
-                <LogOut className="h-4 w-4" />
-                Logout
-              </button>
-
-              <div className="mb-3 grid grid-cols-2 gap-2">
+              <div className="relative mb-6 flex h-11 items-center rounded-2xl bg-slate-100 p-1">
+                <motion.div
+                  className="absolute h-9 rounded-xl bg-white shadow-sm border border-slate-200"
+                  animate={{
+                    left: activeTab === "profile" ? "4px" : "calc(50% + 2px)",
+                    width: "calc(50% - 6px)"
+                  }}
+                  transition={{ type: "spring", bounce: 0.2, duration: 0.4 }}
+                />
                 <button
                   type="button"
                   onClick={showProfile}
-                  className={`rounded-xl border px-3 py-2 text-sm font-semibold transition ${
-                    activeTab === "profile"
-                      ? "border-slate-900 bg-slate-900 text-white"
-                      : "border-slate-300 bg-white text-slate-800 hover:bg-slate-100"
-                  }`}
+                  className={`relative flex-1 z-10 text-sm font-bold transition-colors ${activeTab === "profile" ? "text-slate-900" : "text-slate-500 hover:text-slate-700"}`}
                 >
-                  Profile
+                  Account
                 </button>
                 <button
                   type="button"
                   onClick={showTrips}
-                  className={`rounded-xl border px-3 py-2 text-sm font-semibold transition ${
-                    activeTab === "trips"
-                      ? "border-blue-700 bg-blue-700 text-white"
-                      : "border-blue-300 bg-blue-50 text-blue-900 hover:bg-blue-100"
-                  }`}
+                  className={`relative flex-1 z-10 text-sm font-bold transition-colors ${activeTab === "trips" ? "text-slate-900" : "text-slate-500 hover:text-slate-700"}`}
                 >
-                  Trips
+                  Trips & Safety
                 </button>
               </div>
 
-              {activeTab === "profile" ? (
-                <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
-                  <p className="font-medium text-slate-900">Open Trips to load your recent trip history.</p>
-                  <p className="mt-1">When you select a trip, only SOS alerts from that trip will be shown.</p>
-                </div>
-              ) : (
-                <>
-                  <div className="mb-3 rounded-xl border border-blue-200 bg-blue-50 p-3">
-                    <h3 className="mb-2 inline-flex items-center gap-2 text-sm font-semibold text-blue-800">
-                      <RouteIcon className="h-4 w-4" />
-                      Your Trip History ({tripHistory.length})
-                    </h3>
+              <div className="flex-1 overflow-auto pr-1 custom-scrollbar">
+                {activeTab === "profile" ? (
+                  <div className="space-y-4">
+                    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 space-y-3">
+                      <div className="flex flex-col">
+                        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest pl-0.5">Account ID</span>
+                        <span className="text-sm font-semibold text-slate-700 bg-white p-2 rounded-lg mt-1 border border-slate-100">{profileId || "guest_access"}</span>
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest pl-0.5">Phone Contact</span>
+                        <span className="text-sm font-semibold text-slate-700 bg-white p-2 rounded-lg mt-1 border border-slate-100">{profilePhone || "Not configured"}</span>
+                      </div>
+                    </div>
+                    
+                    <div className="rounded-2xl border border-sky-100 bg-sky-50 p-4">
+                      <p className="text-xs font-medium text-sky-800 leading-relaxed text-center italic opacity-80">
+                        "Your safety is our priority. Open Trips to audit your journey history."
+                      </p>
+                    </div>
 
-                    {historyLoading && (
-                      <p className="text-xs text-blue-700">Loading trip history...</p>
-                    )}
+                    <button
+                      type="button"
+                      onClick={onLogout}
+                      className="w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-4 py-3 text-sm font-bold text-white hover:bg-slate-800 transition-all active:scale-[0.98]"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      Sign Out
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    <section>
+                      <h3 className="mb-3 flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-widest">
+                        <span>Recent Journeys</span>
+                        <span className="bg-sky-100 text-sky-700 px-2 py-0.5 rounded-full border border-sky-200 font-black">{tripHistory.length}</span>
+                      </h3>
 
-                    {!historyLoading && historyError && (
-                      <p className="text-xs text-rose-700">{historyError}</p>
-                    )}
-
-                    <ul className="max-h-52 space-y-2 overflow-auto pr-1 text-xs text-blue-900">
-                      {!historyLoading && tripHistory.length === 0 && (
-                        <li className="text-blue-700">No trips recorded yet.</li>
+                      {historyLoading && (
+                        <div className="py-8 text-center text-xs text-slate-400 animate-pulse">Scanning Trip Vault...</div>
                       )}
-                      {!historyLoading &&
-                        tripHistory.map((item) => {
-                          const isSelected = String(item.id) === String(selectedTripId);
-                          return (
-                            <li key={item.id}>
+
+                      {!historyLoading && historyError && (
+                        <div className="p-4 rounded-xl bg-rose-50 border border-rose-100 text-xs text-rose-700 text-center">{historyError}</div>
+                      )}
+
+                      <div className="space-y-3">
+                        {!historyLoading && tripHistory.length === 0 && (
+                          <div className="py-8 text-center text-slate-400 text-xs font-medium italic">No travel data found.</div>
+                        )}
+                        {!historyLoading &&
+                          tripHistory.map((item) => {
+                            const isSelected = String(item.id) === String(selectedTripId);
+                            return (
                               <button
+                                key={item.id}
                                 type="button"
                                 onClick={() => onSelectTrip?.(item.id)}
-                                className={`w-full rounded-lg border bg-white/90 p-2 text-left ${
+                                className={`group w-full rounded-2xl border p-4 text-left transition-all ${
                                   isSelected
-                                    ? "border-blue-500 ring-1 ring-blue-400"
-                                    : "border-blue-200 hover:border-blue-300"
+                                    ? "border-sky-300 bg-sky-50 shadow-[0_4px_12px_rgba(14,165,233,0.1)]"
+                                    : "border-slate-100 bg-slate-50 hover:bg-slate-100"
                                 }`}
                               >
-                                <div className="font-medium">{item.destinationLabel || "Shared destination"}</div>
-                                <div className="text-blue-700">Distance: {formatDistance(item.distanceMeters)}</div>
-                                <div className="text-blue-700">Duration: {item.durationMinutes} min</div>
-                                <div className="text-blue-600">Started: {formatTime(item.startedAt)}</div>
-                                <div className="text-blue-600">Ended: {formatTime(item.endedAt)}</div>
+                                <div className="flex items-start justify-between gap-2 mb-3">
+                                  <div className={`text-sm font-bold tracking-tight ${isSelected ? "text-sky-700" : "text-slate-900"}`}>
+                                    {item.destinationLabel || "Regional Destination"}
+                                  </div>
+                                  <div className="text-[10px] font-black text-slate-400 bg-white/80 px-2 py-1 rounded-lg border border-slate-100">
+                                    {item.durationMinutes}m
+                                  </div>
+                                </div>
+                                
+                                <div className="grid grid-cols-2 gap-3">
+                                  <div className="flex flex-col opacity-75">
+                                    <span className="text-[9px] uppercase tracking-tighter text-slate-400 font-black">DISTANCE</span>
+                                    <span className="text-xs font-semibold text-slate-700">{formatDistance(item.distanceMeters)}</span>
+                                  </div>
+                                  <div className="flex flex-col opacity-75">
+                                    <span className="text-[9px] uppercase tracking-tighter text-slate-400 font-black">COMPLETED</span>
+                                    <span className="text-xs font-semibold text-slate-700">{new Date(item.endedAt).toLocaleDateString()}</span>
+                                  </div>
+                                </div>
                               </button>
-                            </li>
-                          );
-                        })}
-                    </ul>
-                  </div>
+                            );
+                          })}
+                      </div>
+                    </section>
 
-                  <div className="rounded-xl border border-rose-200 bg-rose-50 p-3">
-                    <h3 className="mb-2 inline-flex items-center gap-2 text-sm font-semibold text-rose-800">
-                      <ShieldAlert className="h-4 w-4" />
-                      SOS For Selected Trip ({sosHistory.length})
-                    </h3>
-                    <ul className="max-h-52 space-y-2 overflow-auto pr-1 text-xs text-rose-900">
-                      {sosHistory.length === 0 && (
-                        <li className="text-rose-700">No SOS events for this trip.</li>
-                      )}
-                      {sosHistory.map((item) => (
-                        <li key={item.id} className="rounded-lg border border-rose-200 bg-white/80 p-2">
-                          <div className="font-medium">{item.actorName || item.actorUserId || "Member"}</div>
-                          <div className="text-rose-700">{item.actorEmail || "No email"}</div>
-                          <div className="text-rose-700">{item.actorPhone || "No phone"}</div>
-                          <div className="text-rose-700">{item.reason || "Safety alert"}</div>
-                          <div className="text-rose-600">Location: {formatCoords(item.sosLat, item.sosLng)}</div>
-                          <div className="text-rose-600">Room: {item.roomId || "-"}</div>
-                          <div className="text-rose-600">{formatTime(item.eventTs || item.createdAt)}</div>
-                        </li>
-                      ))}
-                    </ul>
+                    <section className="pb-4">
+                      <h3 className="mb-3 flex items-center justify-between text-xs font-bold text-rose-400 uppercase tracking-widest">
+                        <span>SOS Alert Logs</span>
+                        {sosHistory.length > 0 && (
+                           <span className="bg-rose-100 text-rose-700 px-2 py-0.5 rounded-full border border-rose-200 font-black">{sosHistory.length}</span>
+                        )}
+                      </h3>
+                      
+                      <div className="space-y-3">
+                        {sosHistory.length === 0 && (
+                          <div className="p-4 rounded-xl border border-slate-100 bg-slate-50 text-xs text-slate-400 text-center italic">
+                            No emergency events for selected trip.
+                          </div>
+                        )}
+                        {sosHistory.map((item) => (
+                          <div key={item.id} className="rounded-2xl border border-rose-100 bg-rose-50/50 p-4 group">
+                            <div className="flex items-center justify-between mb-2">
+                               <span className="text-sm font-bold text-slate-900 group-hover:text-rose-700 transition-colors uppercase tracking-tight">{item.actorName || "Unknown Member"}</span>
+                               <ShieldAlert className="h-3.5 w-3.5 text-rose-500 animate-pulse" />
+                            </div>
+                            <div className="space-y-1.5 opacity-80">
+                                <p className="text-xs text-slate-600 font-medium leading-none">{item.reason || "Automatic Emergency Signal"}</p>
+                                <p className="text-[10px] text-slate-400 font-black tracking-wider pt-1">{formatCoords(item.sosLat, item.sosLng)}</p>
+                                <p className="text-[10px] font-bold text-rose-600/80">{formatTime(item.eventTs || item.createdAt)}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </section>
                   </div>
-                </>
-              )}
+                )}
+              </div>
             </motion.div>
           </motion.div>
         )}
