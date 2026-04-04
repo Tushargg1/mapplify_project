@@ -32,16 +32,17 @@ export default function RightSidebar({
 						initial={{ x: 300, opacity: 0 }}
 						animate={{ x: 0, opacity: 1 }}
 						exit={{ x: 300, opacity: 0 }}
-						transition={{ duration: 0.28 }}
+						transition={{ duration: 0.28, ease: "easeOut" }}
+						style={{ willChange: "transform, opacity" }}
 						className="relative w-[276px] h-full"
 						onPointerDown={onPanelInteract}
 						onMouseEnter={onPanelMouseEnter}
 						onMouseLeave={onPanelMouseLeave}
 					>
-						<div className="h-full bg-white/20 backdrop-blur-xl border border-white/40 shadow-lg rounded-l-2xl pt-3 px-6 pb-6 flex flex-col text-black">
+						<div className="h-full bg-white/85 backdrop-blur-md border border-white/40 shadow-lg rounded-l-2xl pt-3 px-6 pb-6 flex flex-col text-black">
 							<button
 								onClick={onToggle}
-								className="tour-right-sidebar absolute -left-[43px] top-6 w-[43px] h-[43px] bg-white/20 backdrop-blur-xl border border-white/40 shadow-lg rounded-l-xl flex items-center justify-center hover:bg-white/30"
+								className="tour-right-sidebar absolute -left-[43px] top-6 w-[43px] h-[43px] bg-white/85 backdrop-blur-md border border-white/40 shadow-lg rounded-l-xl flex items-center justify-center hover:bg-white/90"
 							>
 								<ChevronRight className="w-5 h-5 text-black" />
 							</button>
@@ -163,9 +164,10 @@ export default function RightSidebar({
 						initial={{ x: 56, opacity: 0 }}
 						animate={{ x: 0, opacity: 1 }}
 						exit={{ x: 56, opacity: 0 }}
-						transition={{ duration: 0.24 }}
+						transition={{ duration: 0.24, ease: "easeOut" }}
+						style={{ willChange: "transform, opacity" }}
 						onClick={onToggle}
-						className="tour-right-sidebar w-[40px] h-32 bg-white/20 backdrop-blur-xl border border-white/40 shadow-lg rounded-l-2xl flex items-center justify-center hover:bg-white/30"
+						className="tour-right-sidebar w-[40px] h-32 bg-white/85 backdrop-blur-md border border-white/40 shadow-lg border-r-0 rounded-l-2xl flex items-center justify-center hover:bg-white/90"
 					>
 						<ChevronLeft className="w-6 h-6 text-black" />
 					</motion.button>

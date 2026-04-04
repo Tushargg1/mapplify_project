@@ -67,15 +67,18 @@ export default function SettingsPanel({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 z-[70] bg-black/40 backdrop-blur-[2px]"
+            transition={{ duration: 0.2 }}
+            style={{ willChange: "opacity" }}
+            className="absolute inset-0 z-[70] bg-black/40 backdrop-blur-sm"
             onClick={onToggle}
           >
             <motion.div
               initial={{ x: -400, opacity: 0.8 }}
               animate={{ x: 0, opacity: 1 }}
               exit={{ x: -400, opacity: 0.8 }}
-              transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="absolute bottom-0 left-0 h-[88vh] w-[370px] max-w-[94vw] rounded-tr-[2.5rem] border-r border-t border-white/60 bg-white/90 p-6 shadow-2xl backdrop-blur-3xl flex flex-col"
+              transition={{ type: "tween", ease: "easeOut", duration: 0.28 }}
+              style={{ willChange: "transform, opacity" }}
+              className="absolute bottom-0 left-0 h-[88vh] w-[370px] max-w-[94vw] rounded-tr-[2.5rem] border-r border-t border-white/60 bg-white/95 p-6 shadow-2xl flex flex-col"
               onClick={(event) => event.stopPropagation()}
             >
               <div className="mb-6 flex items-center justify-between gap-4">

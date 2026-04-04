@@ -578,15 +578,14 @@ export default function MapView() {
   }, [userId]);
 
   const handleJoyrideCallback = (data) => {
-    const { status, action, type } = data;
-    const finishedStatuses = [STATUS.FINISHED, STATUS.SKIPPED];
+    const { status, action } = data;
     
-    // End tour immediately if user hits skip, finishes, or clicks X (close) on any step
+    // Explicitly check string values to ensure it triggers regardless of imported constants
     if (
-      finishedStatuses.includes(status) ||
-      action === 'close' ||
-      action === 'skip' ||
-      (type === 'step:after' && action === 'close')
+      status === 'finished' || 
+      status === 'skipped' || 
+      action === 'close' || 
+      action === 'skip'
     ) {
       setRunTour(false);
       localStorage.setItem("mapplify_tour_completed", "true");
