@@ -121,9 +121,9 @@ export default function Sidebar({
               {isInRoom ? (
                 <button
                   className="w-full py-2 bg-black text-white rounded-xl hover:opacity-90 transition"
-                  onClick={isOwner ? onCloseRoom : onLeaveRoom}
+                  onClick={onLeaveRoom}
                 >
-                  {isOwner ? "Close Room" : "Leave Room"}
+                  Leave Party
                 </button>
               ) : (
                 <div className="mt-6">

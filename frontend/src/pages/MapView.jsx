@@ -329,10 +329,28 @@ function mergeMembersWithSnapshot(previousMembers, snapshotMembers) {
     if (!normalized) return;
 
     const existing = previousById.get(normalized.userId);
-    uniqueById.set(normalized.userId, {
-      ...(existing || {}),
-      ...normalized,
-    });
+    if (existing) {
+      // Keep whichever entry has the newer timestamp to prevent stale snapshots
+      // from overwriting fresh position data
+      const existingTs = Number(existing.ts || 0);
+      const incomingTs = Number(normalized.ts || 0);
+      if (existingTs > incomingTs && Number.isFinite(existing.lat) && Number.isFinite(existing.lng)) {
+        // Existing data is newer — keep it but merge non-position fields from snapshot
+        uniqueById.set(normalized.userId, {
+          ...normalized,
+          lat: existing.lat,
+          lng: existing.lng,
+          ts: existing.ts,
+        });
+      } else {
+        uniqueById.set(normalized.userId, {
+          ...existing,
+          ...normalized,
+        });
+      }
+    } else {
+      uniqueById.set(normalized.userId, normalized);
+    }
   });
 
   return Array.from(uniqueById.values());
@@ -560,14 +578,19 @@ export default function MapView() {
   }, [userId]);
 
   const handleJoyrideCallback = (data) => {
-    const { status, action } = data;
+    const { status, action, type } = data;
     const finishedStatuses = [STATUS.FINISHED, STATUS.SKIPPED];
     
-    // If they hit skip, finish, or manually X out of the tour, never show it again
-    if (finishedStatuses.includes(status) || action === 'close') {
+    // End tour immediately if user hits skip, finishes, or clicks X (close) on any step
+    if (
+      finishedStatuses.includes(status) ||
+      action === 'close' ||
+      action === 'skip' ||
+      (type === 'step:after' && action === 'close')
+    ) {
       setRunTour(false);
       localStorage.setItem("mapplify_tour_completed", "true");
-      localStorage.removeItem("mapplify_show_tour"); // Clear the one-time signup flag
+      localStorage.removeItem("mapplify_show_tour");
     }
   };
 
@@ -575,33 +598,38 @@ export default function MapView() {
     {
       target: '.tour-left-sidebar',
       title: '📍 Group Coordination',
-      content: 'Tap the handle to manage your room, invite others, and plot collaborative routes here.',
+      content: 'Create or join a room, invite your travel party, and coordinate your trip — all from this panel.',
       disableBeacon: true,
-      placement: 'auto'
+      placement: 'auto',
+      spotlightPadding: 8,
     },
     {
       target: '.tour-destination',
       title: '🗺️ Live Navigation',
-      content: 'Shows your active destination, ETA, and turn-by-turn directions at a glance.',
-      placement: 'bottom'
+      content: 'Your active destination, real-time ETA, speed, and turn-by-turn cues — all at a glance.',
+      placement: 'bottom',
+      spotlightPadding: 6,
     },
     {
       target: '.tour-right-sidebar',
-      title: '🛡️ Action Center',
-      content: 'Tap the handle for SOS alerts, voice broadcasting, and finding local safe stops.',
-      placement: 'auto'
+      title: '🛡️ Safety & Actions',
+      content: 'SOS alerts, voice broadcast to your party, and nearby place search — your safety command center.',
+      placement: 'auto',
+      spotlightPadding: 8,
     },
     {
       target: '.tour-settings',
-      title: '⚙️ Profile & History',
-      content: 'Manage your profile and tap to see historical trip logs and emergency recordings.',
-      placement: 'auto'
+      title: '⚙️ Profile & Trip History',
+      content: 'View your profile, review past trips, and see SOS event logs from previous sessions.',
+      placement: 'auto',
+      spotlightPadding: 6,
     },
     {
       target: '.tour-recenter',
-      title: '🎯 Snap to Location',
-      content: 'Tap this anytime to instantly snap the camera back to your current position.',
-      placement: 'top'
+      title: '🎯 Recenter Map',
+      content: 'Lost on the map? Tap here to instantly snap back to your live GPS position.',
+      placement: 'top',
+      spotlightPadding: 8,
     }
   ];
   const [rightSidebarInteractionTick, setRightSidebarInteractionTick] = useState(0);
@@ -689,7 +717,7 @@ export default function MapView() {
   const visiblePlannedStops = plannedStops.filter((stop) => !hiddenStopKeys.includes(stop.stopKey));
   const visibleSharedStops = sharedStops.filter((stop) => !hiddenStopKeys.includes(stop.stopKey));
   const hasPendingBroadcast = broadcastFeed.some((item) => item.pending);
-  const keepRightSidebarOpen = voiceBusy || hasPendingBroadcast || nearbyPlaces.length > 0;
+  const keepRightSidebarOpen = voiceBusy || hasPendingBroadcast;
 
   useEffect(() => {
     myRoomRef.current = myRoom;
@@ -1350,12 +1378,6 @@ export default function MapView() {
       ].slice(0, 80);
     });
 
-    nearbySearchOriginRef.current = null;
-    nearbySearchCommandRef.current = "";
-    setNearbyPlaces([]);
-    setNearbyPlaceType("");
-    saveNearbySearch(null);
-
     setHiddenStopKeys((prev) => prev.filter((key) => key !== stopKey));
     resetRouteThrottleState();
 
@@ -1546,13 +1568,8 @@ export default function MapView() {
     loadHistoryEventsForTrips();
   }
 
-  function playSafetyAlarm() {
+  function playSafetyAlarmBeep() {
     if (typeof window === "undefined") return;
-
-    const now = Date.now();
-    // Avoid stacked alarms if multiple related events arrive at once.
-    if (now - alarmCooldownRef.current < 1200) return;
-    alarmCooldownRef.current = now;
 
     const AudioCtx = window.AudioContext || window.webkitAudioContext;
     if (AudioCtx) {
@@ -1594,7 +1611,36 @@ export default function MapView() {
     }
 
     if (typeof navigator !== "undefined" && typeof navigator.vibrate === "function") {
-      navigator.vibrate([180, 100, 180, 100, 180]);
+      navigator.vibrate([300, 150, 300, 150, 300, 150, 300]);
+    }
+  }
+
+  function playSafetyAlarm(repeat = 1) {
+    if (typeof window === "undefined") return;
+
+    const now = Date.now();
+    if (now - alarmCooldownRef.current < 1200) return;
+    alarmCooldownRef.current = now;
+
+    // Play first beep immediately
+    playSafetyAlarmBeep();
+
+    // Repeat beeps for emphasis (especially for receivers)
+    for (let i = 1; i < repeat; i++) {
+      window.setTimeout(() => playSafetyAlarmBeep(), i * 1500);
+    }
+
+    // Fire native browser notification as fallback (works even if tab is in background)
+    if (typeof Notification !== "undefined" && Notification.permission === "granted") {
+      try {
+        new Notification("🚨 Mapplify SOS Alert", {
+          body: "A party member needs help! Check the app immediately.",
+          tag: "mapplify-sos",
+          requireInteraction: true,
+        });
+      } catch {
+        // Notification API may not be available in all contexts
+      }
     }
   }
 
@@ -1910,10 +1956,6 @@ export default function MapView() {
     }
 
     goToMyLocation();
-
-    if (destination && !navigationActiveRef.current) {
-      toggleDirections();
-    }
   }
 
   function toggleOtherMemberRoutes() {
@@ -2056,7 +2098,11 @@ export default function MapView() {
               });
             });
 
-          if (!wasNull) {
+          if (wasNull) {
+            // User just joined and received the room destination — auto-show route
+            resetRouteThrottleState();
+            pushToast("Destination received — showing route", "info");
+          } else {
             pushToast("Shared destination changed", "info");
           }
           return;
@@ -2091,12 +2137,21 @@ export default function MapView() {
           return;
         }
 
-        if (msg.type === "safety-alert") {
-          playSafetyAlarm();
+        if (msg.type === "room-disbanded") {
+          const disbandedBy = msg.disbandedByName || msg.disbandedBy || "A member";
+          const isMe = String(msg.disbandedBy || "") === String(userId);
+          cleanupRoomState(isMe ? "You left the party" : `${disbandedBy} ended the party`);
+          return;
+        }
 
+        if (msg.type === "safety-alert") {
           const alertUserId = String(msg.userId || "");
           const alertName = msg.name || alertUserId || "A member";
           const reason = msg.reason || "Safety check failed";
+          const isSender = alertUserId === String(userId);
+
+          // Repeat alarm 3 times for receivers so it's unmissable
+          playSafetyAlarm(isSender ? 1 : 3);
 
           saveTripSnapshotForSos({
             roomId: msg.roomId || myRoomRef.current,
@@ -2105,12 +2160,12 @@ export default function MapView() {
             sosReason: reason,
           });
 
-          if (alertUserId === String(userId)) {
+          if (isSender) {
             pushToast("Emergency alert shared with your room", "error", 4200);
             return;
           }
 
-          pushToast(`${alertName} may need help: ${reason}. Please call/check them.`, "error", 8000);
+          pushToast(`🚨 ${alertName} may need help: ${reason}. Please call/check them immediately!`, "error", 15000);
           return;
         }
 
@@ -2337,6 +2392,14 @@ export default function MapView() {
         return;
       }
 
+      const roomData = await response.json();
+
+      // Set the real owner from the server — prevents the joiner from
+      // incorrectly inheriting ownerId from a previously created room.
+      const realOwnerId = roomData?.ownerId || null;
+      setOwnerId(realOwnerId);
+      ownerIdRef.current = realOwnerId;
+
       setMyRoom(roomId);
       myRoomRef.current = roomId;
       pushToast(`Joining room ${roomId}`, "info");
@@ -2405,29 +2468,39 @@ export default function MapView() {
   function leaveRoom(options = {}) {
     if (!myRoomRef.current) return;
 
-    const { publishLeave = true, toastMessage = "Left room" } = options;
+    const { publishLeave = true } = options;
 
     if (publishLeave) {
+      // Disband the entire room — all members will be ejected
       safePublish({
-        destination: "/app/leave",
-        body: JSON.stringify({ roomId: myRoomRef.current, userId }),
+        destination: "/app/disband-room",
+        body: JSON.stringify({
+          roomId: myRoomRef.current,
+          userId,
+          name: displayNameRef.current || userId,
+        }),
       });
     }
 
-    cleanupRoomState(toastMessage);
+    // Local cleanup happens when we receive the room-disbanded event from the server.
+    // But also do it here in case WS is disconnected.
+    cleanupRoomState("You left the party");
   }
 
   function closeRoom() {
-    if (ownerId !== userId) {
-      pushToast("Only owner can close room", "error");
-      return;
-    }
     leaveRoom();
   }
 
   useEffect(() => {
     if (import.meta.env.VITE_GOOGLE_MAPS_API_KEY) return;
     pushToast("Google Maps key missing. Set VITE_GOOGLE_MAPS_API_KEY", "error", 4500);
+  }, []);
+
+  // Request notification permission early so SOS alerts can fire native notifications
+  useEffect(() => {
+    if (typeof Notification !== "undefined" && Notification.permission === "default") {
+      Notification.requestPermission().catch(() => {});
+    }
   }, []);
 
   useEffect(() => {
@@ -2633,6 +2706,33 @@ export default function MapView() {
             const remainingMeters = haversine(lat, lng, destinationLat, destinationLng);
             if (remainingMeters <= DESTINATION_ARRIVAL_RADIUS_METERS) {
               endActiveTrip("arrived", "Destination reached. Trip ended");
+            }
+          }
+
+          // Trim the user's route polyline in real-time to remove segments already passed
+          const myPolyline = routeGraphicsRef.current.get(userId);
+          if (myPolyline && typeof myPolyline.getPath === "function") {
+            const path = myPolyline.getPath();
+            if (path && typeof path.getLength === "function" && path.getLength() > 2) {
+              let closestIndex = 0;
+              let closestDist = Number.POSITIVE_INFINITY;
+              const pathLength = path.getLength();
+              for (let pi = 0; pi < pathLength; pi++) {
+                const pt = path.getAt(pi);
+                const ptLat = typeof pt.lat === "function" ? pt.lat() : Number(pt.lat);
+                const ptLng = typeof pt.lng === "function" ? pt.lng() : Number(pt.lng);
+                const d = haversine(lat, lng, ptLat, ptLng);
+                if (d < closestDist) {
+                  closestDist = d;
+                  closestIndex = pi;
+                }
+              }
+              // Remove all points before the closest point (already passed)
+              if (closestIndex > 0) {
+                for (let ri = 0; ri < closestIndex; ri++) {
+                  path.removeAt(0);
+                }
+              }
             }
           }
         }
@@ -3110,52 +3210,96 @@ export default function MapView() {
           continuous={true}
           showProgress={true}
           showSkipButton={true}
-          hideCloseButton={true}
+          hideCloseButton={false}
           scrollToFirstStep={true}
           locale={{
-            last: 'Start Driving',
-            skip: 'Skip Tour',
-            next: 'Next',
-            back: 'Back'
+            last: "Let's Go! 🚀",
+            skip: 'Skip',
+            next: 'Next →',
+            back: '← Back',
+            close: '✕',
           }}
           disableScrolling={true}
           disableScrollParentFix={true}
           callback={handleJoyrideCallback}
+          floaterProps={{
+            styles: {
+              arrow: {
+                length: 8,
+                spread: 14,
+              },
+            },
+          }}
           styles={{
             options: {
-              primaryColor: '#0ea5e9', // Sky 500
-              textColor: '#0f172a', // Slate 900
+              primaryColor: '#6366f1',
+              textColor: '#1e293b',
               zIndex: 10000,
-              spotlightPadding: 0,
+              arrowColor: 'rgba(255,255,255,0.92)',
+              overlayColor: 'rgba(15, 23, 42, 0.55)',
+            },
+            overlay: {
+              mixBlendMode: 'normal',
+            },
+            spotlight: {
+              borderRadius: '16px',
             },
             tooltip: {
-              borderRadius: '16px',
-              padding: '24px',
+              borderRadius: '20px',
+              padding: '28px 26px 22px',
+              background: 'rgba(255,255,255,0.92)',
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
+              boxShadow: '0 25px 60px rgba(15,23,42,0.22), 0 0 0 1px rgba(255,255,255,0.35) inset',
+              border: '1px solid rgba(255,255,255,0.4)',
             },
-            tooltipContent: {
+            tooltipContainer: {
               textAlign: 'left',
-              padding: '10px 0',
             },
             tooltipTitle: {
-              textAlign: 'left',
-              fontWeight: '700',
-              fontSize: '18px',
+              fontSize: '17px',
+              fontWeight: '800',
+              letterSpacing: '-0.01em',
+              color: '#0f172a',
+              marginBottom: '2px',
+            },
+            tooltipContent: {
+              fontSize: '13.5px',
+              lineHeight: '1.6',
+              color: '#475569',
+              padding: '8px 0 4px',
             },
             buttonNext: {
-              backgroundColor: '#0ea5e9',
-              borderRadius: '8px',
-              padding: '10px 20px',
-              fontWeight: '600',
+              background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+              borderRadius: '12px',
+              padding: '10px 22px',
+              fontWeight: '700',
+              fontSize: '13px',
+              letterSpacing: '0.02em',
+              boxShadow: '0 4px 14px rgba(99,102,241,0.35)',
+              transition: 'transform 0.15s, box-shadow 0.15s',
             },
             buttonBack: {
-              marginRight: '10px',
-              color: '#64748b',
+              marginRight: '12px',
+              color: '#6366f1',
               fontWeight: '600',
+              fontSize: '13px',
             },
             buttonSkip: {
               color: '#94a3b8',
               fontWeight: '500',
-            }
+              fontSize: '12px',
+            },
+            buttonClose: {
+              width: '28px',
+              height: '28px',
+              padding: '0',
+              borderRadius: '50%',
+              background: 'rgba(241,245,249,0.8)',
+              color: '#64748b',
+              top: '12px',
+              right: '12px',
+            },
           }}
         />
 

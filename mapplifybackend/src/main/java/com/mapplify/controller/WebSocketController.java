@@ -335,6 +335,47 @@ public class WebSocketController {
         }
     }
 
+    @MessageMapping("/disband-room")
+    public void disbandRoom(@Payload Map<String, Object> msg) {
+        String roomId = (String) msg.get("roomId");
+        String userId = msg.get("userId") == null ? null : String.valueOf(msg.get("userId"));
+        String name = msg.get("name") == null ? (userId != null ? userId : "A member") : String.valueOf(msg.get("name"));
+
+        if (roomId == null || roomId.isBlank()) {
+            return;
+        }
+
+        Room room = roomService.getRoom(roomId);
+        if (room == null) {
+            messaging.convertAndSend("/topic/rooms/" + roomId,
+                    Map.of("type", "error", "code", "ROOM_NOT_FOUND", "message", "Room not found"));
+            return;
+        }
+
+        // Broadcast room-disbanded event to ALL subscribers before cleaning up
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("type", "room-disbanded");
+        payload.put("roomId", roomId);
+        payload.put("disbandedBy", userId != null ? userId : "");
+        payload.put("disbandedByName", name);
+        payload.put("ts", System.currentTimeMillis());
+
+        messaging.convertAndSend("/topic/rooms/" + roomId, payload);
+
+        // Clear all in-memory members for this room
+        members.remove(roomId);
+
+        // Permanently remove the room so the ID cannot be reused
+        roomService.removeRoom(roomId);
+
+        // Send empty members list to the members topic
+        Map<String, Object> emptyMembersPayload = new LinkedHashMap<>();
+        emptyMembersPayload.put("type", "members");
+        emptyMembersPayload.put("ownerId", "");
+        emptyMembersPayload.put("members", new ArrayList<>());
+        messaging.convertAndSend("/topic/rooms/" + roomId + "/members", emptyMembersPayload);
+    }
+
     private void pushMembers(String roomId) {
         Room room = roomService.getRoom(roomId);
         var roomMembers = members.computeIfAbsent(roomId, id -> new ConcurrentHashMap<>());
