@@ -55,10 +55,10 @@ export default function SettingsPanel({
       <button
         type="button"
         onClick={onToggle}
-        className="tour-settings absolute bottom-[14px] left-[14px] z-50 flex h-11 w-11 items-center justify-center rounded-2xl border border-white/40 bg-white/30 text-white shadow-xl backdrop-blur-md hover:bg-white/40 transition-all active:scale-95"
+        className="tour-settings absolute bottom-[14px] left-[14px] z-50 flex h-11 w-11 items-center justify-center rounded-full bg-white text-slate-800 shadow-[0_4px_12px_rgba(0,0,0,0.12)] border border-slate-200 hover:bg-slate-50 transition-all active:scale-95"
         title="Settings"
       >
-        <Settings className="h-5 w-5 drop-shadow-sm" />
+        <Settings className="h-5 w-5" />
       </button>
 
       <AnimatePresence>
@@ -69,143 +69,151 @@ export default function SettingsPanel({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             style={{ willChange: "opacity" }}
-            className="absolute inset-0 z-[70] bg-black/50"
+            className="absolute inset-0 z-[70] bg-black/30"
             onClick={onToggle}
           >
             <motion.div
-              initial={{ x: -400, opacity: 0.8 }}
+              initial={{ x: "-100%", opacity: 1 }}
               animate={{ x: 0, opacity: 1 }}
-              exit={{ x: -400, opacity: 0.8 }}
-              transition={{ type: "tween", ease: "easeOut", duration: 0.28 }}
-              style={{ willChange: "transform, opacity" }}
-              className="absolute bottom-0 left-0 h-[88vh] w-[370px] max-w-[94vw] rounded-tr-[2.5rem] border-r border-t border-white/60 bg-white/95 p-6 shadow-2xl flex flex-col"
+              exit={{ x: "-100%", opacity: 1 }}
+              transition={{ type: "tween", ease: "easeOut", duration: 0.25 }}
+              style={{ willChange: "transform" }}
+              className="absolute bottom-0 left-0 h-full w-[85vw] max-w-[360px] rounded-r-[24px] bg-[#f8fafc] shadow-2xl flex flex-col overflow-hidden"
               onClick={(event) => event.stopPropagation()}
             >
-              <div className="mb-6 flex items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-2xl bg-slate-900/10 border border-slate-900/5 flex items-center justify-center text-slate-900 font-bold text-lg shadow-sm">
-                    {initials}
-                  </div>
-                  <div className="leading-tight">
-                    <h2 className="text-lg font-bold text-slate-900 tracking-tight">{profileName || "Anonymous User"}</h2>
-                    <p className="text-[11px] text-slate-500 font-medium uppercase tracking-wider">{profileEmail || "No Email Provided"}</p>
-                  </div>
-                </div>
+              {/* Header */}
+              <div className="flex items-center justify-between px-5 pt-12 pb-4 bg-white border-b border-slate-200 shrink-0">
+                <h1 className="text-[22px] font-bold text-slate-900 tracking-tight">Settings</h1>
                 <button
                   type="button"
                   onClick={onToggle}
-                  className="rounded-xl border border-slate-200 bg-slate-100 p-2 text-slate-400 hover:bg-slate-200 hover:text-slate-600 transition-colors"
+                  className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 transition-colors"
                 >
-                  <X className="h-4 w-4" />
+                  <X className="w-4 h-4" />
                 </button>
               </div>
 
-              <div className="relative mb-6 flex h-11 items-center rounded-2xl bg-slate-100 p-1">
-                <motion.div
-                  className="absolute h-9 rounded-xl bg-white shadow-sm border border-slate-200"
-                  animate={{
-                    left: activeTab === "profile" ? "4px" : "calc(50% + 2px)",
-                    width: "calc(50% - 6px)"
-                  }}
-                  transition={{ type: "spring", bounce: 0.2, duration: 0.4 }}
-                />
-                <button
-                  type="button"
-                  onClick={showProfile}
-                  className={`relative flex-1 z-10 text-sm font-bold transition-colors ${activeTab === "profile" ? "text-slate-900" : "text-slate-500 hover:text-slate-700"}`}
-                >
-                  Account
-                </button>
-                <button
-                  type="button"
-                  onClick={showTrips}
-                  className={`relative flex-1 z-10 text-sm font-bold transition-colors ${activeTab === "trips" ? "text-slate-900" : "text-slate-500 hover:text-slate-700"}`}
-                >
-                  Trips & Safety
-                </button>
+              {/* Segmented Control */}
+              <div className="px-5 pt-5 shrink-0">
+                <div className="flex p-[3px] bg-slate-200 rounded-[10px] relative">
+                  <motion.div
+                    className="absolute inset-y-[3px] rounded-[7px] bg-white shadow-sm border border-slate-200/50"
+                    animate={{
+                      left: activeTab === "profile" ? "3px" : "calc(50% + 1.5px)",
+                      width: "calc(50% - 4.5px)",
+                    }}
+                    transition={{ type: "spring", bounce: 0.15, duration: 0.4 }}
+                  />
+                  <button
+                    type="button"
+                    onClick={showProfile}
+                    className={`flex-1 relative z-10 py-1.5 text-[13px] font-semibold transition-colors ${
+                      activeTab === "profile" ? "text-slate-900" : "text-slate-500"
+                    }`}
+                  >
+                    Account
+                  </button>
+                  <button
+                    type="button"
+                    onClick={showTrips}
+                    className={`flex-1 relative z-10 py-1.5 text-[13px] font-semibold transition-colors ${
+                      activeTab === "trips" ? "text-slate-900" : "text-slate-500"
+                    }`}
+                  >
+                    Trips & History
+                  </button>
+                </div>
               </div>
 
-              <div className="flex-1 overflow-auto pr-1 custom-scrollbar">
+              {/* Scrollable Content */}
+              <div className="flex-1 overflow-y-auto px-5 pt-6 pb-8 custom-scrollbar">
                 {activeTab === "profile" ? (
-                  <div className="space-y-4">
-                    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 space-y-3">
-                      <div className="flex flex-col">
-                        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest pl-0.5">Account ID</span>
-                        <span className="text-sm font-semibold text-slate-700 bg-white p-2 rounded-lg mt-1 border border-slate-100">{profileId || "guest_access"}</span>
+                  <div className="space-y-6">
+                    {/* Avatar Group */}
+                    <div className="flex flex-col items-center">
+                      <div className="w-20 h-20 rounded-full bg-gradient-to-br from-indigo-100 to-slate-100 border border-slate-200 flex items-center justify-center shadow-sm mb-3">
+                        <span className="text-[28px] font-semibold text-slate-700">{initials}</span>
                       </div>
-                      <div className="flex flex-col">
-                        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest pl-0.5">Phone Contact</span>
-                        <span className="text-sm font-semibold text-slate-700 bg-white p-2 rounded-lg mt-1 border border-slate-100">{profilePhone || "Not configured"}</span>
-                      </div>
-                    </div>
-                    
-                    <div className="rounded-2xl border border-sky-100 bg-sky-50 p-4">
-                      <p className="text-xs font-medium text-sky-800 leading-relaxed text-center italic opacity-80">
-                        "Your safety is our priority. Open Trips to audit your journey history."
-                      </p>
+                      <h2 className="text-[19px] font-bold text-slate-900">{profileName || "Anonymous User"}</h2>
+                      <p className="text-[14px] text-slate-500 mt-0.5">{profileEmail || "No Email Provided"}</p>
                     </div>
 
-                    <button
-                      type="button"
-                      onClick={onLogout}
-                      className="w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-4 py-3 text-sm font-bold text-white hover:bg-slate-800 transition-all active:scale-[0.98]"
-                    >
-                      <LogOut className="h-4 w-4" />
-                      Sign Out
-                    </button>
+                    {/* Info List */}
+                    <div className="bg-white border border-slate-200 rounded-[14px] overflow-hidden">
+                      <div className="flex items-center justify-between px-4 py-3.5 border-b border-slate-100">
+                        <span className="text-[15px] text-slate-800">Account ID</span>
+                        <span className="text-[14px] text-slate-500 max-w-[140px] truncate">{profileId || "Guest"}</span>
+                      </div>
+                      <div className="flex items-center justify-between px-4 py-3.5">
+                        <span className="text-[15px] text-slate-800">Phone</span>
+                        <span className="text-[14px] text-slate-500">{profilePhone || "Not set"}</span>
+                      </div>
+                    </div>
+
+                    {/* Sign Out Button */}
+                    <div className="pt-2">
+                      <button
+                        type="button"
+                        onClick={onLogout}
+                        className="w-full flex items-center justify-center py-3.5 bg-white border border-rose-200 text-rose-600 rounded-[14px] font-semibold text-[15px] hover:bg-rose-50 transition-colors active:scale-[0.98]"
+                      >
+                        Sign Out
+                      </button>
+                    </div>
                   </div>
                 ) : (
-                  <div className="space-y-6">
+                  <div className="space-y-7">
+                    {/* Trips Section */}
                     <section>
-                      <h3 className="mb-3 flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-widest">
-                        <span>Recent Journeys</span>
-                        <span className="bg-sky-100 text-sky-700 px-2 py-0.5 rounded-full border border-sky-200 font-black">{tripHistory.length}</span>
+                      <h3 className="text-[13px] font-semibold text-slate-500 uppercase tracking-widest pl-1 mb-2.5">
+                        Recent Trips
                       </h3>
 
-                      {historyLoading && (
-                        <div className="py-8 text-center text-xs text-slate-400 animate-pulse">Scanning Trip Vault...</div>
-                      )}
-
-                      {!historyLoading && historyError && (
-                        <div className="p-4 rounded-xl bg-rose-50 border border-rose-100 text-xs text-rose-700 text-center">{historyError}</div>
-                      )}
-
-                      <div className="space-y-3">
-                        {!historyLoading && tripHistory.length === 0 && (
-                          <div className="py-8 text-center text-slate-400 text-xs font-medium italic">No travel data found.</div>
+                      <div className="bg-white border border-slate-200 rounded-[14px] overflow-hidden">
+                        {historyLoading && (
+                          <div className="px-4 py-6 text-center text-[14px] text-slate-400 animate-pulse">
+                            Loading history...
+                          </div>
                         )}
+
+                        {!historyLoading && historyError && (
+                          <div className="px-4 py-4 text-center text-[14px] text-rose-600">
+                            {historyError}
+                          </div>
+                        )}
+
+                        {!historyLoading && tripHistory.length === 0 && !historyError && (
+                          <div className="px-4 py-6 text-center text-[14px] text-slate-400">
+                            No trips found.
+                          </div>
+                        )}
+
                         {!historyLoading &&
-                          tripHistory.map((item) => {
+                          tripHistory.map((item, index) => {
                             const isSelected = String(item.id) === String(selectedTripId);
+                            const isLast = index === tripHistory.length - 1;
+                            
                             return (
                               <button
                                 key={item.id}
                                 type="button"
                                 onClick={() => onSelectTrip?.(item.id)}
-                                className={`group w-full rounded-2xl border p-4 text-left transition-all ${
-                                  isSelected
-                                    ? "border-sky-300 bg-sky-50 shadow-[0_4px_12px_rgba(14,165,233,0.1)]"
-                                    : "border-slate-100 bg-slate-50 hover:bg-slate-100"
-                                }`}
+                                className={`w-full flex flex-col px-4 py-3.5 text-left transition-colors ${
+                                  isSelected ? "bg-indigo-50/50" : "hover:bg-slate-50"
+                                } ${!isLast ? "border-b border-slate-100" : ""}`}
                               >
-                                <div className="flex items-start justify-between gap-2 mb-3">
-                                  <div className={`text-sm font-bold tracking-tight ${isSelected ? "text-sky-700" : "text-slate-900"}`}>
+                                <div className="flex items-center justify-between w-full mb-1">
+                                  <span className={`text-[15px] font-semibold truncate pr-4 ${isSelected ? "text-indigo-700" : "text-slate-900"}`}>
                                     {item.destinationLabel || "Regional Destination"}
-                                  </div>
-                                  <div className="text-[10px] font-black text-slate-400 bg-white/80 px-2 py-1 rounded-lg border border-slate-100">
-                                    {item.durationMinutes}m
-                                  </div>
+                                  </span>
+                                  <span className="text-[13px] text-slate-500 shrink-0">
+                                    {new Date(item.endedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                                  </span>
                                 </div>
-                                
-                                <div className="grid grid-cols-2 gap-3">
-                                  <div className="flex flex-col opacity-75">
-                                    <span className="text-[9px] uppercase tracking-tighter text-slate-400 font-black">DISTANCE</span>
-                                    <span className="text-xs font-semibold text-slate-700">{formatDistance(item.distanceMeters)}</span>
-                                  </div>
-                                  <div className="flex flex-col opacity-75">
-                                    <span className="text-[9px] uppercase tracking-tighter text-slate-400 font-black">COMPLETED</span>
-                                    <span className="text-xs font-semibold text-slate-700">{new Date(item.endedAt).toLocaleDateString()}</span>
-                                  </div>
+                                <div className="flex items-center text-[13px] text-slate-500 space-x-3">
+                                  <span>{formatDistance(item.distanceMeters)}</span>
+                                  <span className="w-1 h-1 rounded-full bg-slate-300" />
+                                  <span>{item.durationMinutes} min</span>
                                 </div>
                               </button>
                             );
@@ -213,33 +221,42 @@ export default function SettingsPanel({
                       </div>
                     </section>
 
-                    <section className="pb-4">
-                      <h3 className="mb-3 flex items-center justify-between text-xs font-bold text-rose-400 uppercase tracking-widest">
-                        <span>SOS Alert Logs</span>
-                        {sosHistory.length > 0 && (
-                           <span className="bg-rose-100 text-rose-700 px-2 py-0.5 rounded-full border border-rose-200 font-black">{sosHistory.length}</span>
-                        )}
+                    {/* SOS Logs Section */}
+                    <section>
+                      <h3 className="text-[13px] font-semibold text-rose-500 uppercase tracking-widest pl-1 mb-2.5">
+                        SOS Activity
                       </h3>
-                      
-                      <div className="space-y-3">
-                        {sosHistory.length === 0 && (
-                          <div className="p-4 rounded-xl border border-slate-100 bg-slate-50 text-xs text-slate-400 text-center italic">
-                            No emergency events for selected trip.
+
+                      <div className="bg-white border border-rose-100 rounded-[14px] overflow-hidden">
+                        {sosHistory.length === 0 ? (
+                          <div className="px-4 py-6 text-center text-[14px] text-slate-400">
+                            No emergency events recorded.
                           </div>
+                        ) : (
+                          sosHistory.map((item, index) => {
+                            const isLast = index === sosHistory.length - 1;
+                            return (
+                              <div
+                                key={item.id}
+                                className={`px-4 py-3.5 ${!isLast ? "border-b border-rose-50" : ""}`}
+                              >
+                                <div className="flex items-start justify-between mb-1">
+                                  <span className="text-[15px] font-semibold text-slate-900">
+                                    {item.actorName || "Unknown"}
+                                  </span>
+                                  <ShieldAlert className="w-4 h-4 text-rose-500 mt-0.5" />
+                                </div>
+                                <div className="text-[13px] text-slate-600 mb-1">
+                                  {item.reason || "Emergency Signal"}
+                                </div>
+                                <div className="flex items-center justify-between text-[12px] text-slate-400 mt-2">
+                                  <span>{formatCoords(item.sosLat, item.sosLng)}</span>
+                                  <span>{formatTime(item.eventTs || item.createdAt).split(',')[1] || formatTime(item.eventTs || item.createdAt)}</span>
+                                </div>
+                              </div>
+                            );
+                          })
                         )}
-                        {sosHistory.map((item) => (
-                          <div key={item.id} className="rounded-2xl border border-rose-100 bg-rose-50/50 p-4 group">
-                            <div className="flex items-center justify-between mb-2">
-                               <span className="text-sm font-bold text-slate-900 group-hover:text-rose-700 transition-colors uppercase tracking-tight">{item.actorName || "Unknown Member"}</span>
-                               <ShieldAlert className="h-3.5 w-3.5 text-rose-500 animate-pulse" />
-                            </div>
-                            <div className="space-y-1.5 opacity-80">
-                                <p className="text-xs text-slate-600 font-medium leading-none">{item.reason || "Automatic Emergency Signal"}</p>
-                                <p className="text-[10px] text-slate-400 font-black tracking-wider pt-1">{formatCoords(item.sosLat, item.sosLng)}</p>
-                                <p className="text-[10px] font-bold text-rose-600/80">{formatTime(item.eventTs || item.createdAt)}</p>
-                            </div>
-                          </div>
-                        ))}
                       </div>
                     </section>
                   </div>
