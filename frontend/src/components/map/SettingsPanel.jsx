@@ -55,7 +55,7 @@ export default function SettingsPanel({
       <button
         type="button"
         onClick={onToggle}
-        className="tour-settings absolute bottom-[14px] left-[14px] z-50 flex h-11 w-11 items-center justify-center rounded-2xl border border-white/40 bg-white/30 text-white shadow-xl backdrop-blur-2xl hover:bg-white/40 transition-all active:scale-95"
+        className="tour-settings absolute bottom-[14px] left-[14px] z-50 flex h-11 w-11 items-center justify-center rounded-2xl border border-white/40 bg-white/30 text-white shadow-xl backdrop-blur-md hover:bg-white/40 transition-all active:scale-95"
         title="Settings"
       >
         <Settings className="h-5 w-5 drop-shadow-sm" />
@@ -69,7 +69,7 @@ export default function SettingsPanel({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             style={{ willChange: "opacity" }}
-            className="absolute inset-0 z-[70] bg-black/40 backdrop-blur-sm"
+            className="absolute inset-0 z-[70] bg-black/50"
             onClick={onToggle}
           >
             <motion.div
