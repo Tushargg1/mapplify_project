@@ -561,12 +561,12 @@ export default function MapView() {
 
   // Joyride Tour State
   const [runTour, setRunTour] = useState(false);
-  
+
   useEffect(() => {
     const showTourFlag = localStorage.getItem("mapplify_show_tour");
     const tourCompleted = localStorage.getItem("mapplify_tour_completed");
     const isGuest = String(userId).startsWith("guest-");
-    
+
     // Trigger tour ONLY if:
     // 1. User just signed up (showTourFlag is true)
     // 2. OR User is NOT a guest AND hasn't completed the tour yet.
@@ -579,12 +579,12 @@ export default function MapView() {
 
   const handleJoyrideCallback = (data) => {
     const { status, action } = data;
-    
+
     // Explicitly check string values to ensure it triggers regardless of imported constants
     if (
-      status === 'finished' || 
-      status === 'skipped' || 
-      action === 'close' || 
+      status === 'finished' ||
+      status === 'skipped' ||
+      action === 'close' ||
       action === 'skip'
     ) {
       setRunTour(false);
@@ -677,6 +677,7 @@ export default function MapView() {
   const turnByTurnStepsRef = useRef(turnByTurnSteps);
   const lastAnnouncedStepRef = useRef(-1);
   const lastNavigationCameraRef = useRef({ lat: NaN, lng: NaN, bearing: NaN });
+  const autoFollowRef = useRef(true);
   const wellbeingPromptActiveRef = useRef(false);
   const wellbeingPromptTimerRef = useRef(null);
   const alarmAudioCtxRef = useRef(null);
@@ -733,6 +734,52 @@ export default function MapView() {
 
   useEffect(() => {
     destinationRef.current = destination;
+
+    if (destination && !navigationActiveRef.current) {
+        setNavigationActive(true);
+        autoFollowRef.current = true;
+        
+        currentTripRef.current = {
+          startedAt: Date.now(),
+          roomId: myRoomRef.current || null,
+          destinationLabel: destination.label || "Shared destination",
+        };
+        setActiveStepIndex(0);
+        setTurnByTurnSteps([]);
+        resetRouteThrottleState();
+
+        const navZoom = getDrivingNavigationZoom(navigationMonitorRef.current?.speedKmh || 0);
+        const validPosition = lastGpsUpdateRef.current;
+        
+        if (validPosition) {
+           const targetLat = Number.isFinite(destination.lat) ? destination.lat : validPosition.lat;
+           const targetLng = Number.isFinite(destination.lng) ? destination.lng : validPosition.lng;
+
+           const startBearing = calculateBearing(validPosition.lat, validPosition.lng, targetLat, targetLng);
+           setMapCenter({ lat: validPosition.lat, lng: validPosition.lng });
+           setMapZoom(navZoom);
+           setMapHeading(startBearing);
+           setMapTilt(NAV_CAMERA_PITCH);
+
+           if (map.current) {
+             map.current.setCenter({ lat: validPosition.lat, lng: validPosition.lng });
+             map.current.setZoom(navZoom);
+             if (typeof map.current.setHeading === "function") {
+               map.current.setHeading(startBearing);
+             }
+             if (typeof map.current.setTilt === "function") {
+               map.current.setTilt(NAV_CAMERA_PITCH);
+             }
+           }
+
+           lastNavigationCameraRef.current = {
+             lat: validPosition.lat,
+             lng: validPosition.lng,
+             bearing: startBearing,
+           };
+        }
+        pushToast("Navigation auto-started", "info");
+    }
   }, [destination]);
 
   useEffect(() => {
@@ -1231,28 +1278,28 @@ export default function MapView() {
         return;
       }
 
-        const cachedSearch = getStoredNearbySearch();
-        if (
-          cachedSearch &&
-          cachedSearch.command &&
-          cachedSearch.command.toLowerCase() === spokenCommand.toLowerCase()
-        ) {
-          const distanceFromCachedOrigin = haversine(
-            cachedSearch.origin.lat,
-            cachedSearch.origin.lng,
-            lat,
-            lng
-          );
+      const cachedSearch = getStoredNearbySearch();
+      if (
+        cachedSearch &&
+        cachedSearch.command &&
+        cachedSearch.command.toLowerCase() === spokenCommand.toLowerCase()
+      ) {
+        const distanceFromCachedOrigin = haversine(
+          cachedSearch.origin.lat,
+          cachedSearch.origin.lng,
+          lat,
+          lng
+        );
 
-          if (distanceFromCachedOrigin < NEARBY_RESULTS_RESET_DISTANCE_METERS) {
-            nearbySearchOriginRef.current = cachedSearch.origin;
-            nearbySearchCommandRef.current = cachedSearch.command;
-            setNearbyPlaceType(cachedSearch.placeType || "");
-            setNearbyPlaces(Array.isArray(cachedSearch.places) ? cachedSearch.places : []);
-            pushToast("Loaded saved nearby results", "info", 2200);
-            return;
-          }
+        if (distanceFromCachedOrigin < NEARBY_RESULTS_RESET_DISTANCE_METERS) {
+          nearbySearchOriginRef.current = cachedSearch.origin;
+          nearbySearchCommandRef.current = cachedSearch.command;
+          setNearbyPlaceType(cachedSearch.placeType || "");
+          setNearbyPlaces(Array.isArray(cachedSearch.places) ? cachedSearch.places : []);
+          pushToast("Loaded saved nearby results", "info", 2200);
+          return;
         }
+      }
 
       const result = await findNearbyFromVoice(spokenCommand, lat, lng);
       const normalized = (result.places || [])
@@ -1406,41 +1453,41 @@ export default function MapView() {
     );
   }
 
-    function removeStopForParty(place) {
-      if (!myRoomRef.current || !place) return;
+  function removeStopForParty(place) {
+    if (!myRoomRef.current || !place) return;
 
-      const lat = Number(place.lat);
-      const lng = Number(place.lng);
-      if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
-        pushToast("Selected place has no valid coordinates", "error", 2600);
-        return;
-      }
-
-      const placeName = String(place.title || place.label || "Stop").trim();
-      const stopKey = String(place.stopKey || makeStopKey(userId, placeName, lat, lng));
-
-      setPlannedStops((prev) => prev.filter((stop) => !isSameStopLocation(stop, lat, lng)));
-      setSharedStops((prev) => prev.filter((stop) => !isSameStopLocation(stop, lat, lng, String(userId))));
-      setHiddenStopKeys((prev) => (prev.includes(stopKey) ? prev : [...prev, stopKey]));
-      resetRouteThrottleState();
-
-      safePublish({
-        destination: "/app/add-stop",
-        body: JSON.stringify({
-          roomId: myRoomRef.current,
-          memberId: String(userId),
-          memberName: displayNameRef.current || String(userId),
-          placeName,
-          lat,
-          lng,
-          stopKey,
-          type: "STOP_REMOVED",
-          ts: Date.now(),
-        }),
-      });
-
-      pushToast(`Stop removed: ${placeName}`, "info", 2400);
+    const lat = Number(place.lat);
+    const lng = Number(place.lng);
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+      pushToast("Selected place has no valid coordinates", "error", 2600);
+      return;
     }
+
+    const placeName = String(place.title || place.label || "Stop").trim();
+    const stopKey = String(place.stopKey || makeStopKey(userId, placeName, lat, lng));
+
+    setPlannedStops((prev) => prev.filter((stop) => !isSameStopLocation(stop, lat, lng)));
+    setSharedStops((prev) => prev.filter((stop) => !isSameStopLocation(stop, lat, lng, String(userId))));
+    setHiddenStopKeys((prev) => (prev.includes(stopKey) ? prev : [...prev, stopKey]));
+    resetRouteThrottleState();
+
+    safePublish({
+      destination: "/app/add-stop",
+      body: JSON.stringify({
+        roomId: myRoomRef.current,
+        memberId: String(userId),
+        memberName: displayNameRef.current || String(userId),
+        placeName,
+        lat,
+        lng,
+        stopKey,
+        type: "STOP_REMOVED",
+        ts: Date.now(),
+      }),
+    });
+
+    pushToast(`Stop removed: ${placeName}`, "info", 2400);
+  }
 
   function appendHistoryEntry(entry) {
     createHistoryEvent(entry)
@@ -1448,7 +1495,7 @@ export default function MapView() {
         if (!created) return;
         setHistoryEvents((prev) => [created, ...prev].slice(0, 300));
       })
-      .catch(() => {});
+      .catch(() => { });
   }
 
   function finalizeTripHistory(endReason) {
@@ -1579,7 +1626,7 @@ export default function MapView() {
 
         const ctx = alarmAudioCtxRef.current;
         if (ctx.state === "suspended") {
-          ctx.resume().catch(() => {});
+          ctx.resume().catch(() => { });
         }
 
         const tones = [880, 660, 880, 660];
@@ -1848,7 +1895,7 @@ export default function MapView() {
             return { ...prev, label: placeName };
           });
         })
-        .catch(() => {});
+        .catch(() => { });
     }
   }
 
@@ -1954,6 +2001,7 @@ export default function MapView() {
       return;
     }
 
+    autoFollowRef.current = true;
     goToMyLocation();
   }
 
@@ -2023,7 +2071,7 @@ export default function MapView() {
       webSocketFactory: () => socket,
       reconnectDelay: 2000,
     });
-    
+
     stompRef.current = client;
 
     client.onConnect = () => {
@@ -2110,7 +2158,7 @@ export default function MapView() {
         if (msg.type === "presence") {
           const memberName = msg.user?.name || msg.user?.userId || "Member";
           const isMe = String(msg.user?.userId) === String(userId);
-          
+
           if (msg.action === "join") {
             if (!isMe) {
               pushToast(`${memberName} joined`, "info", 2200);
@@ -2329,9 +2377,9 @@ export default function MapView() {
       const centerValue = map.current?.getCenter?.();
       const center = centerValue
         ? {
-            lat: typeof centerValue.lat === "function" ? Number(centerValue.lat()) : Number(centerValue.lat),
-            lng: typeof centerValue.lng === "function" ? Number(centerValue.lng()) : Number(centerValue.lng),
-          }
+          lat: typeof centerValue.lat === "function" ? Number(centerValue.lat()) : Number(centerValue.lat),
+          lng: typeof centerValue.lng === "function" ? Number(centerValue.lng()) : Number(centerValue.lng),
+        }
         : mapCenter;
 
       if (!Number.isFinite(center?.lat) || !Number.isFinite(center?.lng)) {
@@ -2453,7 +2501,7 @@ export default function MapView() {
     resetRouteThrottleState();
     resetInactivityTracker(false);
     localStorage.removeItem(STORAGE_KEYS.roomId);
-    
+
     if (toastMessage) {
       pushToast(toastMessage, "info");
     }
@@ -2498,7 +2546,7 @@ export default function MapView() {
   // Request notification permission early so SOS alerts can fire native notifications
   useEffect(() => {
     if (typeof Notification !== "undefined" && Notification.permission === "default") {
-      Notification.requestPermission().catch(() => {});
+      Notification.requestPermission().catch(() => { });
     }
   }, []);
 
@@ -2666,7 +2714,7 @@ export default function MapView() {
             const locationChanged = movedSinceLastCamera >= NAV_CAMERA_CENTER_UPDATE_MIN_METERS;
             const directionChanged = directionDelta >= NAV_CAMERA_BEARING_UPDATE_MIN_DEGREES;
 
-            if (locationChanged) {
+            if (locationChanged && autoFollowRef.current) {
               const nextCameraBearing = directionChanged || !Number.isFinite(previousCamera.bearing)
                 ? bearing
                 : previousCamera.bearing;
@@ -2829,10 +2877,10 @@ export default function MapView() {
 
     const destinationForUser = activeStop
       ? {
-          lat: Number(activeStop.lat),
-          lng: Number(activeStop.lng),
-          label: activeStop.placeName || "Planned stop",
-        }
+        lat: Number(activeStop.lat),
+        lng: Number(activeStop.lng),
+        label: activeStop.placeName || "Planned stop",
+      }
       : destination;
 
     const destinationForOthers = destination || destinationForUser;
@@ -2965,6 +3013,7 @@ export default function MapView() {
   useEffect(() => {
     if (!navigationActive) return;
     if (!turnByTurnSteps.length) return;
+    if (!autoFollowRef.current) return;
 
     const active = turnByTurnSteps[activeStepIndex];
     if (!active) return;
@@ -3161,6 +3210,8 @@ export default function MapView() {
           onTilesLoaded={handleTilesLoaded}
           disableDefaultUI
           gestureHandling="greedy"
+          onDrag={() => { autoFollowRef.current = false; }}
+          onDragStart={() => { autoFollowRef.current = false; }}
         >
           {destination && (
             <AdvancedMarker position={{ lat: Number(destination.lat), lng: Number(destination.lng) }}>

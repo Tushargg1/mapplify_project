@@ -140,22 +140,22 @@ export default function RightSidebar({
 								))}
 							</div>
 
-						<div className="mt-auto pt-4 space-y-3">
-							<button
-								type="button"
-								onClick={onTriggerSos}
-								disabled={!isInRoom}
-								className="w-full py-2 rounded-xl bg-rose-600 text-white hover:bg-rose-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex flex-col items-center justify-center leading-tight"
-							>
-								<div className="flex items-center gap-2 font-bold text-sm">
-									<AlertTriangle className="w-4 h-4" />
-									SOS - Alert Party
-								</div>
-								<div className="text-[10px] opacity-90 mt-0.5">
-									Use only for urgent situations
-								</div>
-							</button>
-						</div>
+							<div className="mt-auto pt-4 space-y-3">
+								<button
+									type="button"
+									onClick={onTriggerSos}
+									disabled={!isInRoom}
+									className="w-full py-2 rounded-xl bg-rose-600 text-white hover:bg-rose-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex flex-col items-center justify-center leading-tight"
+								>
+									<div className="flex items-center gap-2 font-bold text-sm">
+										<AlertTriangle className="w-4 h-4" />
+										SOS - Alert Party
+									</div>
+									<div className="text-[10px] opacity-90 mt-0.5">
+										Use only for urgent situations
+									</div>
+								</button>
+							</div>
 						</div>
 					</motion.div>
 				) : (
