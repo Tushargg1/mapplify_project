@@ -606,6 +606,7 @@ export default function MapView() {
       target: '.tour-destination',
       title: '🗺️ Live Navigation',
       content: 'Your active destination, real-time ETA, speed, and turn-by-turn cues — all at a glance.',
+      disableBeacon: true,
       placement: 'bottom',
       spotlightPadding: 6,
     },
@@ -613,6 +614,7 @@ export default function MapView() {
       target: '.tour-right-sidebar',
       title: '🛡️ Safety & Actions',
       content: 'SOS alerts, voice broadcast to your party, and nearby place search — your safety command center.',
+      disableBeacon: true,
       placement: 'auto',
       spotlightPadding: 8,
     },
@@ -620,6 +622,7 @@ export default function MapView() {
       target: '.tour-settings',
       title: '⚙️ Profile & Trip History',
       content: 'View your profile, review past trips, and see SOS event logs from previous sessions.',
+      disableBeacon: true,
       placement: 'auto',
       spotlightPadding: 6,
     },
@@ -627,6 +630,7 @@ export default function MapView() {
       target: '.tour-recenter',
       title: '🎯 Recenter Map',
       content: 'Lost on the map? Tap here to instantly snap back to your live GPS position.',
+      disableBeacon: true,
       placement: 'top',
       spotlightPadding: 8,
     }
@@ -3259,16 +3263,106 @@ export default function MapView() {
           run={runTour}
           continuous={true}
           showProgress={true}
-          showSkipButton={true}
-          hideCloseButton={false}
+          showSkipButton={false}
+          hideCloseButton={true}
           scrollToFirstStep={true}
           locale={{
             last: "Let's Go! 🚀",
             skip: 'Skip',
             next: 'Next →',
             back: '← Back',
-            close: '✕',
           }}
+          tooltipComponent={({ continuous, index, step, backProps, closeProps, primaryProps, tooltipProps, skipProps, isLastStep }) => (
+            <div {...tooltipProps} style={{
+              borderRadius: '20px',
+              padding: '28px 26px 22px',
+              background: 'rgba(255,255,255,0.92)',
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
+              boxShadow: '0 25px 60px rgba(15,23,42,0.22), 0 0 0 1px rgba(255,255,255,0.35) inset',
+              border: '1px solid rgba(255,255,255,0.4)',
+              maxWidth: '420px',
+            }}>
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  setRunTour(false);
+                  localStorage.setItem("mapplify_tour_completed", "true");
+                  localStorage.removeItem("mapplify_show_tour");
+                }}
+                style={{
+                  position: 'absolute',
+                  top: '16px',
+                  right: '16px',
+                  background: 'transparent',
+                  border: 'none',
+                  color: '#94a3b8',
+                  fontWeight: '600',
+                  fontSize: '13px',
+                  cursor: 'pointer',
+                  padding: '4px 8px',
+                }}
+              >
+                Skip
+              </button>
+              {step.title && (
+                <div style={{
+                  fontSize: '17px',
+                  fontWeight: '800',
+                  letterSpacing: '-0.01em',
+                  color: '#0f172a',
+                  marginBottom: '2px',
+                }}>
+                  {step.title}
+                </div>
+              )}
+              {step.content && (
+                <div style={{
+                  fontSize: '13.5px',
+                  lineHeight: '1.6',
+                  color: '#475569',
+                  padding: '8px 0 4px',
+                }}>
+                  {step.content}
+                </div>
+              )}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                marginTop: '20px',
+              }}>
+                {index > 0 && (
+                  <button {...backProps} style={{
+                    color: '#6366f1',
+                    fontWeight: '600',
+                    fontSize: '13px',
+                    background: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    padding: '10px 16px',
+                  }}>
+                    ← Back
+                  </button>
+                )}
+                <button {...primaryProps} style={{
+                  background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                  borderRadius: '12px',
+                  padding: '10px 22px',
+                  fontWeight: '700',
+                  fontSize: '13px',
+                  letterSpacing: '0.02em',
+                  boxShadow: '0 4px 14px rgba(99,102,241,0.35)',
+                  color: 'white',
+                  border: 'none',
+                  cursor: 'pointer',
+                  marginLeft: 'auto',
+                }}>
+                  {isLastStep ? "Let's Go! 🚀" : 'Next →'}
+                </button>
+              </div>
+            </div>
+          )}
           disableScrolling={true}
           disableScrollParentFix={true}
           callback={handleJoyrideCallback}
@@ -3293,62 +3387,6 @@ export default function MapView() {
             },
             spotlight: {
               borderRadius: '16px',
-            },
-            tooltip: {
-              borderRadius: '20px',
-              padding: '28px 26px 22px',
-              background: 'rgba(255,255,255,0.92)',
-              backdropFilter: 'blur(20px)',
-              WebkitBackdropFilter: 'blur(20px)',
-              boxShadow: '0 25px 60px rgba(15,23,42,0.22), 0 0 0 1px rgba(255,255,255,0.35) inset',
-              border: '1px solid rgba(255,255,255,0.4)',
-            },
-            tooltipContainer: {
-              textAlign: 'left',
-            },
-            tooltipTitle: {
-              fontSize: '17px',
-              fontWeight: '800',
-              letterSpacing: '-0.01em',
-              color: '#0f172a',
-              marginBottom: '2px',
-            },
-            tooltipContent: {
-              fontSize: '13.5px',
-              lineHeight: '1.6',
-              color: '#475569',
-              padding: '8px 0 4px',
-            },
-            buttonNext: {
-              background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
-              borderRadius: '12px',
-              padding: '10px 22px',
-              fontWeight: '700',
-              fontSize: '13px',
-              letterSpacing: '0.02em',
-              boxShadow: '0 4px 14px rgba(99,102,241,0.35)',
-              transition: 'transform 0.15s, box-shadow 0.15s',
-            },
-            buttonBack: {
-              marginRight: '12px',
-              color: '#6366f1',
-              fontWeight: '600',
-              fontSize: '13px',
-            },
-            buttonSkip: {
-              color: '#94a3b8',
-              fontWeight: '500',
-              fontSize: '12px',
-            },
-            buttonClose: {
-              width: '28px',
-              height: '28px',
-              padding: '0',
-              borderRadius: '50%',
-              background: 'rgba(241,245,249,0.8)',
-              color: '#64748b',
-              top: '12px',
-              right: '12px',
             },
           }}
         />
