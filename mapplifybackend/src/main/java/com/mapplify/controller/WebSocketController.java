@@ -325,6 +325,45 @@ public class WebSocketController {
         messaging.convertAndSend("/topic/rooms/" + roomId, payload);
     }
 
+    @MessageMapping("/remove-stop")
+    public void removeStop(@Payload Map<String, Object> msg) {
+        String roomId = (String) msg.get("roomId");
+        String memberId = msg.get("memberId") == null ? null : String.valueOf(msg.get("memberId"));
+        if (roomId == null || roomId.isBlank() || memberId == null || memberId.isBlank()) {
+            return;
+        }
+
+        Room room = roomService.getRoom(roomId);
+        if (room == null) {
+            messaging.convertAndSend("/topic/rooms/" + roomId,
+                    Map.of("type", "error", "code", "ROOM_NOT_FOUND", "message", "Room not found"));
+            return;
+        }
+
+        Double lat = parseDoubleValue(msg.get("lat"));
+        Double lng = parseDoubleValue(msg.get("lng"));
+        if (lat == null || lng == null) {
+            return;
+        }
+
+        String placeName = msg.get("placeName") == null ? "Stop" : String.valueOf(msg.get("placeName"));
+        String stopKey = msg.get("stopKey") == null ? "" : String.valueOf(msg.get("stopKey"));
+        String memberName = msg.get("memberName") == null ? memberId : String.valueOf(msg.get("memberName"));
+
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("type", "stop-removed");
+        payload.put("roomId", roomId);
+        payload.put("memberId", memberId);
+        payload.put("memberName", memberName);
+        payload.put("placeName", placeName);
+        payload.put("lat", lat);
+        payload.put("lng", lng);
+        payload.put("stopKey", stopKey);
+        payload.put("ts", msg.get("ts") != null ? msg.get("ts") : System.currentTimeMillis());
+
+        messaging.convertAndSend("/topic/rooms/" + roomId, payload);
+    }
+
     private Double parseDoubleValue(Object value) {
         if (value == null) return null;
         try {

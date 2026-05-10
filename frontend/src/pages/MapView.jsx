@@ -698,6 +698,7 @@ export default function MapView() {
     referenceLng: NaN,
     lastMovementTs: 0,
   });
+  const currentAudioRef = useRef(null);
 
   const nearbyPlacesWithStatus = nearbyPlaces.map((place) => {
     const placeLat = Number(place?.lat);
@@ -937,6 +938,18 @@ export default function MapView() {
     const phrase = String(text || "").trim();
     if (!phrase) return;
 
+    // Cancel any currently playing audio
+    if (currentAudioRef.current) {
+      currentAudioRef.current.pause();
+      currentAudioRef.current.currentTime = 0;
+      currentAudioRef.current = null;
+    }
+    
+    // Cancel browser speech synthesis if active
+    if (typeof window !== "undefined" && "speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+    }
+
     const fallbackSpeak = () => {
       if (typeof window !== "undefined" && "speechSynthesis" in window) {
         const fallback = new SpeechSynthesisUtterance(phrase);
@@ -963,13 +976,30 @@ export default function MapView() {
       const url = URL.createObjectURL(blob);
       const audio = new Audio(url);
       audio.playbackRate = VOICE_PLAYBACK_RATE;
-      audio.onended = () => URL.revokeObjectURL(url);
+      
+      // Store reference to current audio
+      currentAudioRef.current = audio;
+      
+      audio.onended = () => {
+        URL.revokeObjectURL(url);
+        if (currentAudioRef.current === audio) {
+          currentAudioRef.current = null;
+        }
+      };
+      
       audio.onerror = () => {
         URL.revokeObjectURL(url);
+        if (currentAudioRef.current === audio) {
+          currentAudioRef.current = null;
+        }
         fallbackSpeak();
       };
+      
       audio.play().catch(() => {
         URL.revokeObjectURL(url);
+        if (currentAudioRef.current === audio) {
+          currentAudioRef.current = null;
+        }
         fallbackSpeak();
       });
     } catch {
@@ -1448,13 +1478,12 @@ export default function MapView() {
     });
 
     const distanceHint = formatApproxDistance(approxDistanceMeters);
-    pushToast(
-      distanceHint
-        ? `Stop added: ${placeName} (${distanceHint})`
-        : `Stop added: ${placeName}`,
-      "success",
-      2800
-    );
+    const announcement = distanceHint
+      ? `Stop added: ${placeName} (${distanceHint})`
+      : `Stop added: ${placeName}`;
+    
+    pushToast(announcement, "success", 2800);
+    playVoiceAgentLine(announcement);
   }
 
   function removeStopForParty(place) {
@@ -1476,7 +1505,7 @@ export default function MapView() {
     resetRouteThrottleState();
 
     safePublish({
-      destination: "/app/add-stop",
+      destination: "/app/remove-stop",
       body: JSON.stringify({
         roomId: myRoomRef.current,
         memberId: String(userId),
@@ -1490,7 +1519,9 @@ export default function MapView() {
       }),
     });
 
-    pushToast(`Stop removed: ${placeName}`, "info", 2400);
+    const announcement = `Stop removed: ${placeName}`;
+    pushToast(announcement, "info", 2400);
+    playVoiceAgentLine(announcement);
   }
 
   function appendHistoryEntry(entry) {
@@ -1877,7 +1908,14 @@ export default function MapView() {
 
     const nextDestination = { lat, lng, label };
     setDestination(nextDestination);
+    destinationRef.current = nextDestination;
     setMapCenter({ lat, lng });
+    resetRouteThrottleState();
+    
+    // Retry route fetch after 1 second to ensure it renders
+    setTimeout(() => {
+      resetRouteThrottleState();
+    }, 1000);
 
     if (map.current?.panTo) {
       map.current.panTo({ lat, lng });
@@ -2149,9 +2187,14 @@ export default function MapView() {
               });
             });
 
-          if (wasNull) {
-            // User just joined and received the room destination — auto-show route
+          resetRouteThrottleState();
+          
+          // Retry route fetch after 1 second to ensure it renders
+          setTimeout(() => {
             resetRouteThrottleState();
+          }, 1000);
+          
+          if (wasNull) {
             pushToast("Destination received — showing route", "info");
           } else {
             pushToast("Shared destination changed", "info");
@@ -2263,11 +2306,18 @@ export default function MapView() {
           const stopLat = Number(msg.lat);
           const stopLng = Number(msg.lng);
           if (!Number.isFinite(stopLat) || !Number.isFinite(stopLng)) return;
+          
+          const memberId = String(msg.memberId || "");
+          const isMine = memberId === String(userId);
+          
+          // Skip own broadcasts — already handled locally
+          if (isMine) return;
+          
           const stopKey = String(msg.stopKey || makeStopKey(msg.memberId, msg.placeName || msg.placeLabel || "Stop", stopLat, stopLng));
 
           const stop = {
             id: stopKey || `${msg.memberId || "member"}-${msg.ts || Date.now()}`,
-            memberId: String(msg.memberId || ""),
+            memberId,
             memberName: msg.memberName || msg.memberId || "Member",
             reason: msg.reason || "stop",
             placeName: msg.placeName || "Stop",
@@ -2278,20 +2328,24 @@ export default function MapView() {
           };
 
           const isShared = stop.visibility === "shared";
-          const isMine = stop.memberId === String(userId);
+          const isPrivate = stop.visibility === "private";
 
-          if (isShared || isMine) {
+          if (isShared) {
             setSharedStops((prev) => {
               const next = prev.filter((item) => !isSameStopLocation(item, stopLat, stopLng, stop.memberId));
               next.unshift(stop);
               return next.slice(0, 80);
             });
-          }
-
-          if (isShared) {
-            pushToast(`${stop.memberName} added a stop: ${stop.placeName}`, "info", 3600);
-          } else {
-            pushToast(`${stop.memberName} added a personal stop for ${stop.reason}`, "info", 3800);
+            resetRouteThrottleState();
+            
+            const announcement = `${stop.memberName} added a stop: ${stop.placeName}`;
+            pushToast(announcement, "info", 3600);
+            playVoiceAgentLine(announcement);
+          } else if (isPrivate) {
+            // Private stops: show notification to everyone but don't add to routing
+            const announcement = `${stop.memberName} added a personal stop at ${stop.placeName}`;
+            pushToast(announcement, "info", 3600);
+            playVoiceAgentLine(announcement);
           }
           return;
         }
@@ -2301,13 +2355,23 @@ export default function MapView() {
           const stopLng = Number(msg.lng);
           const stopKey = String(msg.stopKey || makeStopKey(msg.memberId, msg.placeName || "Stop", stopLat, stopLng));
           const memberId = String(msg.memberId || "");
+          const memberName = String(msg.memberName || msg.memberId || "A member");
+          const placeName = String(msg.placeName || "Stop");
+          
+          const isMine = memberId === String(userId);
+          
+          // Skip own broadcasts — already handled locally
+          if (isMine) {
+            return;
+          }
 
           setPlannedStops((prev) => prev.filter((stop) => !isSameStopLocation(stop, stopLat, stopLng)));
           setSharedStops((prev) => prev.filter((stop) => !isSameStopLocation(stop, stopLat, stopLng, memberId)));
+          resetRouteThrottleState();
 
-          if (memberId === String(userId)) {
-            pushToast(`Stop removed: ${msg.placeName || "Stop"}`, "info", 2400);
-          }
+          const announcement = `${memberName} removed a stop: ${placeName}`;
+          pushToast(announcement, "info", 2400);
+          playVoiceAgentLine(announcement);
           return;
         }
 
@@ -2810,7 +2874,22 @@ export default function MapView() {
   }, [userId]);
 
   useEffect(() => {
-    const activeStop = visiblePlannedStops[0] || null;
+    const currentPos = lastGpsUpdateRef.current || myPosition;
+    const currentLat = Number(currentPos?.lat);
+    const currentLng = Number(currentPos?.lng);
+
+    const allVisibleStops = [...visiblePlannedStops, ...visibleSharedStops]
+      .map((stop) => {
+        const stopLat = Number(stop.lat);
+        const stopLng = Number(stop.lng);
+        const distance = Number.isFinite(currentLat) && Number.isFinite(currentLng) && Number.isFinite(stopLat) && Number.isFinite(stopLng)
+          ? haversine(currentLat, currentLng, stopLat, stopLng)
+          : Number.POSITIVE_INFINITY;
+        return { ...stop, calculatedDistance: distance };
+      })
+      .sort((a, b) => a.calculatedDistance - b.calculatedDistance);
+
+    const activeStop = allVisibleStops[0] || null;
     const hasRouteTarget = Boolean(activeStop || destination);
 
     if (!mapReady || !hasRouteTarget) {
@@ -2902,10 +2981,18 @@ export default function MapView() {
 
     if (duplicateSnapshot || withinThrottleWindow) return;
 
+    // Increment sequence FIRST to invalidate any in-flight requests
+    const seq = ++routeSeqRef.current;
     lastRouteRequestRef.current = { key: requestKey, destinationKey, ts: now };
 
+    // Clear old routes immediately when destination changes
+    if (!sameDestination) {
+      clearAllRouteLines();
+      setRouteStats({});
+      setTurnByTurnSteps([]);
+    }
+
     let cancelled = false;
-    const seq = ++routeSeqRef.current;
 
     (async () => {
       const result = await Promise.all(
@@ -3012,7 +3099,7 @@ export default function MapView() {
     return () => {
       cancelled = true;
     };
-  }, [mapReady, destination, plannedStops, members, myPosition, userId, showOtherMemberRoutes]);
+  }, [mapReady, destination, plannedStops, sharedStops, members, myPosition, userId, showOtherMemberRoutes]);
 
   useEffect(() => {
     if (!navigationActive) return;
