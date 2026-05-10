@@ -24,7 +24,6 @@ export default function Sidebar({
   showOtherMemberRoutes,
   hasOtherMembers,
   onToggleOtherMemberRoutes,
-  onEndTrip,
   navigationMonitor,
   nextTurnCue,
   nextTurnInstruction,
@@ -119,14 +118,29 @@ export default function Sidebar({
                 </div>
               )}
 
-              {isInRoom ? (
+              {isInRoom && !isOwner && (
                 <button
                   className="w-full py-2 bg-black text-white rounded-xl hover:opacity-90 transition"
                   onClick={onLeaveRoom}
                 >
                   Leave Party
                 </button>
-              ) : (
+              )}
+
+              {isInRoom && isOwner && (
+                <button
+                  className="w-full py-2 bg-rose-600 text-white rounded-xl hover:bg-rose-700 transition"
+                  onClick={() => {
+                    if (window.confirm("End the party? All members will be removed and the trip will be saved to history.")) {
+                      onCloseRoom();
+                    }
+                  }}
+                >
+                  End Party
+                </button>
+              )}
+
+              {!isInRoom && (
                 <div className="mt-6">
                   <p className="text-xs text-gray-700">Not in a room</p>
                 </div>
@@ -187,17 +201,6 @@ export default function Sidebar({
                       );
                     })}
                   </ul>
-                </div>
-
-                <div className="shrink-0 mb-2">
-                  <button
-                    type="button"
-                    onClick={onEndTrip}
-                    disabled={!navigationActive}
-                    className="w-full py-2 rounded-xl bg-rose-600 text-white hover:bg-rose-700 transition disabled:opacity-50"
-                  >
-                    End Trip
-                  </button>
                 </div>
               </div>
             </div>

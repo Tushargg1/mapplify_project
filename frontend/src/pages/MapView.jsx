@@ -324,6 +324,7 @@ function mergeMembersWithSnapshot(previousMembers, snapshotMembers) {
 
   const uniqueById = new Map();
 
+  // Process all members from the snapshot (this is the authoritative list from backend)
   (Array.isArray(snapshotMembers) ? snapshotMembers : []).forEach((member) => {
     const normalized = normalizeMember(member);
     if (!normalized) return;
@@ -353,6 +354,7 @@ function mergeMembersWithSnapshot(previousMembers, snapshotMembers) {
     }
   });
 
+  // Return only members that are in the snapshot - this ensures removed members are gone
   return Array.from(uniqueById.values());
 }
 
@@ -2210,6 +2212,7 @@ export default function MapView() {
             if (!isMe) {
               pushToast(`${memberName} joined`, "info", 2200);
             }
+            // Don't manually update members here - let the members snapshot handle it
           }
 
           if (msg.action === "leave") {
@@ -2225,7 +2228,8 @@ export default function MapView() {
               return;
             }
 
-            setMembers((prev) => prev.filter((member) => String(member.userId) !== leavingUserId));
+            // Don't manually update members here - let the members snapshot handle it
+            // Only clean up their shared stops
             setSharedStops((prev) => prev.filter((stop) => String(stop.memberId || "") !== leavingUserId));
           }
           return;
@@ -2234,7 +2238,13 @@ export default function MapView() {
         if (msg.type === "room-disbanded") {
           const disbandedBy = msg.disbandedByName || msg.disbandedBy || "A member";
           const isMe = String(msg.disbandedBy || "") === String(userId);
-          cleanupRoomState(isMe ? "You left the party" : `${disbandedBy} ended the party`);
+          
+          // Save trip history before cleaning up
+          if (currentTripRef.current) {
+            finalizeTripHistory(isMe ? "party-ended" : "party-ended-by-admin");
+          }
+          
+          cleanupRoomState(isMe ? "You ended the party" : `${disbandedBy} ended the party`);
           return;
         }
 
@@ -2585,10 +2595,15 @@ export default function MapView() {
 
     const { publishLeave = true } = options;
 
+    // Save trip history before leaving
+    if (currentTripRef.current) {
+      finalizeTripHistory("left-party");
+    }
+
     if (publishLeave) {
-      // Disband the entire room — all members will be ejected
+      // Regular member leaving - just remove themselves from the room
       safePublish({
-        destination: "/app/disband-room",
+        destination: "/app/leave",
         body: JSON.stringify({
           roomId: myRoomRef.current,
           userId,
@@ -2597,13 +2612,31 @@ export default function MapView() {
       });
     }
 
-    // Local cleanup happens when we receive the room-disbanded event from the server.
-    // But also do it here in case WS is disconnected.
+    // Local cleanup
     cleanupRoomState("You left the party");
   }
 
   function closeRoom() {
-    leaveRoom();
+    if (!myRoomRef.current) return;
+
+    // Save trip history before ending the party
+    if (currentTripRef.current) {
+      finalizeTripHistory("party-ended");
+    }
+
+    // Admin ending the party - disband the entire room for all members
+    safePublish({
+      destination: "/app/disband-room",
+      body: JSON.stringify({
+        roomId: myRoomRef.current,
+        userId,
+        name: displayNameRef.current || userId,
+      }),
+    });
+
+    // Local cleanup happens when we receive the room-disbanded event from the server.
+    // But also do it here in case WS is disconnected.
+    cleanupRoomState("You ended the party");
   }
 
   useEffect(() => {
@@ -3505,7 +3538,6 @@ export default function MapView() {
           showOtherMemberRoutes={showOtherMemberRoutes}
           hasOtherMembers={hasOtherMembers}
           onToggleOtherMemberRoutes={toggleOtherMemberRoutes}
-          onEndTrip={endTripFromSidebar}
           navigationMonitor={navigationMonitor}
           nextTurnCue={nextTurn?.cue || "Continue"}
           nextTurnInstruction={nextTurn?.instruction || "No active turn"}
